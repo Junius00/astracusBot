@@ -4,5 +4,5 @@ from objects.OG import OG
 
 og = OG(OG_AVARI, R_WHEAT)
 
-b = Building(B_ROAD)
-print(b.try_build(og))
+b = Building(B_VILLAGE)
+[print(x) for x in b.try_build(og)]

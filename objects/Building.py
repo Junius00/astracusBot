@@ -18,7 +18,7 @@ class Building():
         
         paths = []
         def get_path(path, p_others, r_others):
-            if len(p_others) == 0 or len(r_others) == 0:
+            if len(p_others) == 0:
                 paths.append(path)
                 return None
             
