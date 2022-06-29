@@ -14,3 +14,12 @@ R_WHEAT = 'Wheat'
 R_WATER = 'Water'
 R_MINERAL = 'Mineral'
 R_WOOD = 'Wood'
+
+C_BLACK = 'black'
+C_BLUE = 'blue'
+C_GREEN = 'green'
+C_YELLOW = 'yellow'
+
+T_BANNER = 'banner'
+T_DOOR = 'door'
+T_FLAG = 'flag'
