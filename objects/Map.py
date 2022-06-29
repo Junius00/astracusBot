@@ -68,6 +68,11 @@ class Map():
                     #     empty_board[Y:Y + shape[0], X:X + shape[1]], 0.5, image, 0.7, 0)
                     # empty_board[Y:Y + shape[0], X:X + shape[1]] = addition
                     self.add_transparent_image(empty_board, image, X, Y)
+
+        h, w = empty_board.shape[:2]
+        nw = 1000
+        w, h = nw, int(h * nw/w)
+        empty_board = cv2.resize(empty_board, (w, h))
         cv2.imshow("M", empty_board)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
