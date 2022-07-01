@@ -5,10 +5,12 @@ from objects.OG import OG
 
 def test_build_combinations():
     og = OG(OG_AVARI, R_WHEAT)
-
+    print(og.items)
     b = Building(B_VILLAGE)
     [print(x) for x in b.try_build(og)]
 
 def test_map():
     map = Map()
     map.generate_map()
+
+test_build_combinations()
