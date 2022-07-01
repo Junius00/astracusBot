@@ -5,6 +5,7 @@ OG_THERON = 'OG4 THERON'
 
 KEY_R = 'resource'
 KEY_B = 'building'
+KEY_P = 'point'
 
 B_HOUSE = 'House'
 B_VILLAGE = 'Village'
@@ -14,6 +15,8 @@ R_WHEAT = 'Wheat'
 R_WATER = 'Water'
 R_MINERAL = 'Mineral'
 R_WOOD = 'Wood'
+
+P_FLAG_STEAL = 'Flags Stolen'
 
 C_BLACK = 'black'
 C_BLUE = 'blue'
