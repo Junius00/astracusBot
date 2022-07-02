@@ -14,3 +14,4 @@ def test_map():
     map.generate_map()
 
 test_build_combinations()
+test_map()

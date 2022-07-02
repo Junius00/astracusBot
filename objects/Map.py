@@ -74,8 +74,8 @@ class Map():
         w, h = nw, int(h * nw/w)
         empty_board = cv2.resize(empty_board, (w, h))
         cv2.imshow("M", empty_board)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        os.chdir('assets')
+        cv2.imwrite("current_board.png", empty_board)
 
     def add_transparent_image(self, background, foreground, x_offset=None, y_offset=None):
         bg_h, bg_w, bg_channels = background.shape
