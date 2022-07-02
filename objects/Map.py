@@ -69,7 +69,7 @@ class Map():
                         FOLDER_ASSETS, MAP_ASSET_FILENAMES[building.owner][building.name]), cv2.IMREAD_UNCHANGED)
                 
             if building.name == B_ROAD:
-                image = ndimage.rotate(image, c[3] + 90)
+                image = ndimage.rotate(image, 90 - c[3])
 
             yadj, xadj = (np.array(image.shape) // 2)[:2]
             x, y = c_to_xy(c)

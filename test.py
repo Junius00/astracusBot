@@ -26,23 +26,28 @@ def test_map():
         c = c_gen()
         while not is_valid(c):
             c = c_gen()
+
         q, r, s, a = c
 
-        if i > 9:
-            choices.append(c)
-            continue
-
-        bname = choice([B_ROAD, B_HOUSE, B_VILLAGE])
+        #bname = choice([B_ROAD, B_HOUSE, B_VILLAGE])
+        bname = B_ROAD
         bowner = choice([OG_AVARI, OG_KELGRAS, OG_LEVIATHAN, OG_THERON])
 
         if bname == B_ROAD:
             a += MAP_E_OFFSET
+
+        c = q, r, s, a
+        if i > 9:
+            print(i-9, c, bname)
+            choices.append(c)
+            continue
+    
         b = Building()
         b.owner = bowner
 
         b.set_name(bname)
 
-        map.place_building((q, r, s, a), b)
+        map.place_building(c, b)
 
     for k, v in map.map.items():
         print(f'{k}: {v.owner} {v.name}')

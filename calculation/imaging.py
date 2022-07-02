@@ -8,7 +8,7 @@ from constants.map.positions import CENTER_HEX, HEX_DIAMETER, HEX_RADIUS_EDGE, H
 def get_unit_vector(angle):
     angle = (angle + 90) % 360
     angle *= math.pi/180
-    return np.array([math.cos(angle), -math.sin(angle)])
+    return np.array([-math.cos(angle), -math.sin(angle)])
 
 def c_to_xy(c):
     q, _, s, a = c
