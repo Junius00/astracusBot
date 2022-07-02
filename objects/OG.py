@@ -1,8 +1,8 @@
 import json
 import os
-from constants.names import B_HOUSE, B_ROAD, B_VILLAGE, KEY_B, KEY_R, R_MINERAL, R_WATER, R_WHEAT, R_WOOD
+from constants.names import B_HOUSE, B_ROAD, B_VILLAGE, KEY_B, KEY_P, KEY_R, R_MINERAL, R_WATER, R_WHEAT, R_WOOD
 from constants.storage import FOLDER_DATA
-from constants.templates import B_TEMPLATE, R_TEMPLATE
+from constants.templates import B_TEMPLATE, P_TEMPLATE, R_TEMPLATE
 
 
 class OG():
@@ -22,7 +22,8 @@ class OG():
         
         return {
             KEY_B: B_TEMPLATE,
-            KEY_R: R_TEMPLATE
+            KEY_R: R_TEMPLATE,
+            KEY_P: P_TEMPLATE
         }
     
     def save_to_json(self):
@@ -47,3 +48,26 @@ class OG():
         
         self.items[KEY_R][r_key] -= amount
         return True
+
+    #returns True if possible, otherwise False and no change
+    def buy_building(self, r_set, building):
+        old_res = self.items[KEY_R].copy()
+
+        prices = [building.ratio[0], *building.ratio[1]]
+        for i, r in enumerate(r_set):
+            success = self.use_resource(r, prices[i])
+            
+            #revert immediately if fail
+            if not success:
+                self.items[KEY_R] = old_res
+                return False
+        
+        self.items[KEY_B][building.name] += 1
+        return True
+
+    def calculate_points(self):
+        summary = ""
+        
+
+    def use_modifier(self, modifier_function, *args, **kwargs):
+        modifier_function(self, *args, **kwargs)
