@@ -20,7 +20,7 @@ LEFT, TOP LEFT, TOP RIGHT, RIGHT, BOTTOM RIGHT, BOTTOM LEFT.
 
 class Map():
     def __init__(self):
-        self.filename = os.path.join(FOLDER_DATA, "Map.json")
+        self.filename = os.path.join(FOLDER_DATA, "map.json")
         self.map_img = os.path.join(FOLDER_ASSETS, "board.png")
         self.map = self.load_from_json()
 

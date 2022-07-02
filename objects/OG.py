@@ -1,6 +1,6 @@
 import json
 import os
-from constants.names import B_HOUSE, B_ROAD, B_VILLAGE, KEY_B, KEY_P, KEY_R, R_MINERAL, R_WATER, R_WHEAT, R_WOOD
+from constants.names import KEY_B, KEY_P, KEY_R, R_MINERAL, R_WATER, R_WHEAT, R_WOOD
 from constants.storage import FOLDER_DATA
 from constants.templates import B_TEMPLATE, P_TEMPLATE, R_TEMPLATE
 
@@ -54,8 +54,8 @@ class OG():
         old_res = self.items[KEY_R].copy()
 
         prices = [building.ratio[0], *building.ratio[1]]
-        for i, r in enumerate(r_set):
-            success = self.use_resource(r, prices[i])
+        for p, r in zip(prices, r_set):
+            success = self.use_resource(r, p)
             
             #revert immediately if fail
             if not success:
