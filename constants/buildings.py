@@ -1,5 +1,10 @@
 from constants.names import B_HOUSE, B_ROAD, B_VILLAGE
 
+KEY_NAME = 'bName'
+KEY_OWNER = 'bOwner'
+KEY_C = 'bC'
+KEY_CONNECTED = 'bConnected'
+
 B_POINTS = {
     B_ROAD: 0,
     B_HOUSE: 1,

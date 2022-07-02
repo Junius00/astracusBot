@@ -1,10 +1,16 @@
+from ast import literal_eval
 import json
 import os
 import cv2
 import numpy as np
 from scipy import ndimage
+from calculation.imaging import c_to_xy
+from constants.map.assets import MAP_ASSET_FILENAMES
+from constants.map.drawing import CHOICE_COLOR, CHOICE_FONT, CHOICE_FONTSCALE, CHOICE_RADIUS, CHOICE_THICKNESS
+from constants.map.positions import BORDER_SIZE
+from constants.names import B_ROAD
 from constants.storage import FOLDER_DATA, FOLDER_ASSETS
-from constants.map_positions import TOP_LEFT_PIXEL, DISPLACEMENTS, ROTATE_ANGLES
+from objects.Building import Building
 
 """
 1. Reset map function
@@ -13,8 +19,6 @@ from constants.map_positions import TOP_LEFT_PIXEL, DISPLACEMENTS, ROTATE_ANGLES
 4. Load JSON from storage
 5. Export to storage
 6. Generate image (Array)
-
-LEFT, TOP LEFT, TOP RIGHT, RIGHT, BOTTOM RIGHT, BOTTOM LEFT.
 """
 
 
@@ -22,60 +26,71 @@ class Map():
     def __init__(self):
         self.filename = os.path.join(FOLDER_DATA, "map.json")
         self.map_img = os.path.join(FOLDER_ASSETS, "board.png")
-        self.map = self.load_from_json()
+        self.load_from_json()
 
     def reset_map(self):
-        self.map = [["", "", "", "", "", "", "", "", "", "", "", ""]
-                    for _ in range(29)]
+        self.map = {}
 
-    def add_item(self, colour, type, box, position):
-        self.map[box - 1, position - 1] = colour + type
+    def place_building(self, c, building):
+        self.map[c] = building
+        building.c = c
 
-    def remove_item(self, box, position):
-        self.map[box - 1, position - 1] = ""
+    def remove_building(self, c):
+        if c in self.map:
+            del self.map[c]
 
     def load_from_json(self):
         if os.path.exists(self.filename):
             f = open(self.filename, 'r')
             res = json.load(f)
             f.close()
+            
+            res = {literal_eval(k): Building().to_obj(v) for k, v in res.items()}
+            self.map = res
 
-            return res
+            return
 
-        return [["blackdoor", "blackflag", "blackdoor", "blackflag", "blackdoor", "blackbanner", "blackdoor", "blackbanner", "blackdoor", "blackbanner", "blackdoor", "blackbanner"] for _ in range(29)]
+        self.reset_map()
 
     def save_to_json(self):
+        map_obj = {str(k): v.to_obj() for k, v in self.map.items()}
         with open(self.filename, 'w') as f:
-            json.dump(self.items, f)
+            json.dump(map_obj, f)
 
-    def generate_map(self):
-        empty_board = cv2.imread(self.map_img)
-        empty_board = cv2.copyMakeBorder(
-            empty_board, 300, 300, 300, 300, cv2.BORDER_CONSTANT, value=[255, 255, 255])
-        for box in range(29):
-            for position in range(12):
-                if self.map[box][position] != "":
-                    image = cv2.imread(os.path.join(
-                        FOLDER_ASSETS, self.map[box][position] + '.png'), cv2.IMREAD_UNCHANGED)
-                    image = ndimage.rotate(image, ROTATE_ANGLES[position])
-                    shape = image.shape
-                    to_center = np.array(shape) // 2
-                    X = TOP_LEFT_PIXEL[box][0] + \
-                        DISPLACEMENTS[position][0] - to_center[1]
-                    Y = TOP_LEFT_PIXEL[box][1] + \
-                        DISPLACEMENTS[position][1] - to_center[0]
-                    # addition = cv2.addWeighted(
-                    #     empty_board[Y:Y + shape[0], X:X + shape[1]], 0.5, image, 0.7, 0)
-                    # empty_board[Y:Y + shape[0], X:X + shape[1]] = addition
-                    self.add_transparent_image(empty_board, image, X, Y)
+    def generate_map_img(self, choices=None):
+        board = cv2.imread(self.map_img)
+        board = cv2.copyMakeBorder(
+            board, 
+            *[BORDER_SIZE for _ in range(4)], 
+            cv2.BORDER_CONSTANT, value=[255, 255, 255])
 
-        h, w = empty_board.shape[:2]
+        for c, building in self.map.items():
+            image = cv2.imread(os.path.join(
+                        FOLDER_ASSETS, MAP_ASSET_FILENAMES[building.owner][building.name]), cv2.IMREAD_UNCHANGED)
+                
+            if building.name == B_ROAD:
+                image = ndimage.rotate(image, c[3] + 90)
+
+            yadj, xadj = (np.array(image.shape) // 2)[:2]
+            x, y = c_to_xy(c)
+            x, y = x - xadj, y - yadj
+
+            self.add_transparent_image(board, image, x, y)
+
+        if choices:
+            for i, c in enumerate(choices):
+                x, y = c_to_xy(c)
+                cv2.circle(board, (x, y), CHOICE_RADIUS, CHOICE_COLOR, CHOICE_THICKNESS)
+                cv2.putText(board, str(i+1), (x + CHOICE_RADIUS, y - CHOICE_RADIUS), CHOICE_FONT, CHOICE_FONTSCALE, CHOICE_COLOR, CHOICE_THICKNESS, cv2.LINE_AA)
+
+        h, w = board.shape[:2]
         nw = 1000
         w, h = nw, int(h * nw/w)
-        empty_board = cv2.resize(empty_board, (w, h))
-        cv2.imshow("M", empty_board)
+        board = cv2.resize(board, (w, h))
+        cv2.imshow("M", board)
+        cv2.waitKey(0)
         os.chdir('assets')
-        cv2.imwrite("current_board.png", empty_board)
+        cv2.imwrite("current_board.png", board)
 
     def add_transparent_image(self, background, foreground, x_offset=None, y_offset=None):
         bg_h, bg_w, bg_channels = background.shape

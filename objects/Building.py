@@ -1,8 +1,16 @@
+from ast import literal_eval
+import json
 from calculation.arrays import nCr
-from constants.buildings import B_POINTS, B_RATIOS
+from constants.buildings import B_POINTS, B_RATIOS, KEY_C, KEY_CONNECTED, KEY_NAME, KEY_OWNER
 
 class Building():
-    def __init__(self, name):
+    def __init__(self):
+        self.name = None
+        self.owner = None
+        self.c = None
+        self.connected = []
+
+    def set_name(self, name):
         self.name = name
         self.points = B_POINTS[name]
         self.ratio = B_RATIOS[name]
@@ -46,6 +54,17 @@ class Building():
 
         get_path([og.dominant_r], p_others, r_others)        
         return paths if paths else None
-
-
-
+    
+    def to_obj(self):
+        return {
+            KEY_NAME: self.name,
+            KEY_OWNER: self.owner,
+            KEY_C: str(self.c),
+            KEY_CONNECTED: [b.to_obj() for b in self.connected]
+        }
+    
+    def from_obj(self, obj):
+        self.set_name(obj[KEY_NAME])
+        self.owner = obj[KEY_OWNER]
+        self.c = literal_eval(obj[KEY_C])
+        self.connected = [Building().from_obj(o) for o in obj[KEY_CONNECTED]]
