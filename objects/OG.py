@@ -3,7 +3,7 @@ import os
 from constants.names import B_HOUSE, B_ROAD, B_VILLAGE, KEY_B, KEY_P, KEY_R, R_MINERAL, R_WATER, R_WHEAT, R_WOOD
 from constants.og import DOMINANT_RESOURCES
 from constants.storage import FOLDER_DATA
-from constants.templates import B_TEMPLATE, P_TEMPLATE, R_TEMPLATE
+from constants.templates import GET_B_TEMPLATE, GET_P_TEMPLATE, GET_R_TEMPLATE
 from objects.Building import Building
 
 
@@ -17,9 +17,9 @@ class OG():
 
     def reset_items(self):
         self.items = {
-            KEY_B: B_TEMPLATE,
-            KEY_R: R_TEMPLATE,
-            KEY_P: P_TEMPLATE
+            KEY_B: GET_B_TEMPLATE(),
+            KEY_R: GET_R_TEMPLATE(),
+            KEY_P: GET_P_TEMPLATE()
         }
     
     def set_starting_house(self, house):
@@ -94,7 +94,7 @@ class OG():
                 self.items[KEY_R] = old_res
                 return False
         
-        self.items[KEY_B][building.name] += 1
+        self.items[KEY_B][building.name].append(building)
         return True
 
     def calculate_points(self):

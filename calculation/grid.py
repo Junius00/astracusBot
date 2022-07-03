@@ -34,7 +34,10 @@ def check_equivalent(c1, c2):
 
     if c1 == c2:
         return True
-        
+    
+    if a1 == a2:
+        return False
+    
     rem1, rem2 = a1 % 60, a2 % 60
     #check for edge/vertex similarity
     if rem1 != rem2:
@@ -60,6 +63,9 @@ def check_equivalent(c1, c2):
     (qm, rm, sm, am), (qM, rM, sM, aM) = c_sorted
 
     calc = {
+        (0, 120): qm == qM and rm - rM == 1 and sM - sm == 1,
+        (120, 240): qM - qm == 1 and rm == rM and sm - sM == 1,
+        (0, 240): qM - qm == 1 and rm - rM == 1 and sm == sM,
         (60, 180): qM - qm == 1 and rm - rM == 1 and sm == sM,
         (180, 300): qm == qM and rM - rm == 1 and sm - sM == 1,
         (60, 300): qM - qm == 1 and rm == rM and sm - sM == 1
@@ -67,11 +73,15 @@ def check_equivalent(c1, c2):
 
     return calc[(am, aM)]
 
-def find_equivalent(c):
+def find_equivalent(c, include_c=False):
     if not is_valid(c):
         return []
     
     possible = []
+
+    if include_c:
+        possible.append(c)
+
     for offset in get_offsets(c):
         c_new = mod_c(c, offset)
 

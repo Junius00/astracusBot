@@ -2,6 +2,9 @@ from calculation.grid import check_equivalent, find_neighbours
 
 
 def can_build_house(map, c):
+    if map.get_building(c):
+        return False
+
     edges = find_neighbours(c)
 
     for e in edges:

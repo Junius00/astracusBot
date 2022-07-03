@@ -38,19 +38,19 @@ class Map():
         self.map[c] = building
         building.c = c
 
-        print(building.owner, c)
-
     def remove_building(self, c):
         if c in self.map:
             del self.map[c]
 
     def get_building(self, c):
+        if c in self.map:
+            return self.map[c]
+        
         possible = find_equivalent(c)
         ret = None
 
         for p in possible:
-            ret = self.map.get(c, None)
-
+            ret = self.map.get(p, None)
             if ret:
                 break
         
@@ -81,7 +81,6 @@ class Map():
             *[BORDER_SIZE for _ in range(4)], 
             cv2.BORDER_CONSTANT, value=[255, 255, 255])
 
-        print(self.map)
         for c, building in self.map.items():
             image = cv2.imread(os.path.join(
                         FOLDER_ASSETS, MAP_ASSET_FILENAMES[building.owner][building.name]), cv2.IMREAD_UNCHANGED)
@@ -107,12 +106,12 @@ class Map():
         board = cv2.resize(board, (w, h))
 
         cv2.imshow("M", board)
-        cv2.waitKey(0)
-        
-        os.chdir('assets')
-        cv2.imwrite("current_board.png", board)
+        cv2.waitKey(3000)
+        cv2.destroyAllWindows()
 
-    def get_possible_map(self, og, building):
+        cv2.imwrite(os.path.join(FOLDER_ASSETS, "current_board.png"), board)
+        
+    def get_possible_choices(self, og, building):
         def road():
             start = og.get_starting_house()
             if not start:
@@ -127,7 +126,13 @@ class Map():
             for r in og.get_roads():
                 for v in find_neighbours(r.c):
                     for e in find_neighbours(v):
-                        if not self.get_building(e):
+                        exists = False
+                        for x in find_equivalent(e, include_c=True):
+                            if x in possible:
+                                exists = True
+                                break
+
+                        if not self.get_building(e) and not exists:
                             possible.append(e)
 
             return possible
@@ -160,8 +165,7 @@ class Map():
         }
 
         choices = cases[building.name]()
-
-        self.generate_map_img(choices=choices)
+        return choices
 
     def add_transparent_image(self, background, foreground, x_offset=None, y_offset=None):
         bg_h, bg_w, bg_channels = background.shape

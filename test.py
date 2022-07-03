@@ -3,6 +3,7 @@ from calculation.grid import check_equivalent, find_equivalent, find_neighbours,
 from constants.map.axes import MAP_E_OFFSET, MAP_QLIM, MAP_RLIM, MAP_SLIM
 from constants.map.positions import START_AVARI, START_KELGRAS, START_LEVIATHAN, START_THERON
 from constants.names import B_HOUSE, B_VILLAGE, B_ROAD, KEY_R, OG_AVARI, OG_KELGRAS, OG_LEVIATHAN, OG_THERON, R_WHEAT, R_WATER, R_WOOD, R_MINERAL
+from constants.templates import GET_B_TEMPLATE
 from objects.Building import Building
 from objects.Map import Map
 from objects.OG import OG
@@ -60,35 +61,53 @@ def test_build_map():
 
     ogs = [OG(OG_AVARI), OG(OG_KELGRAS), OG(OG_LEVIATHAN), OG(OG_THERON)]
     starts = [START_AVARI, START_KELGRAS, START_LEVIATHAN, START_THERON]
-    buildings = [Building(), Building(), Building(), Building()]
 
-    for og, c, b in zip(ogs, starts, buildings):
-        print(b.to_obj())
+    for og, c in zip(ogs, starts):
+        b = Building()
         b.set_name(B_HOUSE)
 
         og.set_starting_house(b)
         map.place_building(c, b)
-    
-    for b in buildings:
-        print(b.to_obj())
-
-    for og in ogs:
-        print(og.name, og.get_houses()[0].to_obj())
 
     while True:
         for og in ogs:
-            print(og.name)
-            print("""
-            1. ROAD
-            2. HOUSE
-            3. VILLAGE
-            """)
-            choice = [B_ROAD, B_HOUSE, B_VILLAGE][int(input('>> ')) - 1]
-            
-            b = Building()
-            b.set_name(choice)
+            while True:
+                print(og.name)
+                print("""
+                1. ROAD
+                2. HOUSE
+                3. VILLAGE
+                """)
+                btype = [B_ROAD, B_HOUSE, B_VILLAGE][int(input('>> ')) - 1]
+                
+                b = Building()
+                b.set_name(btype)
+                b.owner = og.name
 
-            map.get_possible_map(og, b)
+                r_sets = b.try_build(og)
+                choices = map.get_possible_choices(og, b)
+                if not choices:
+                    print('No options available.')
+                    continue
+                
+                if not r_sets:
+                    print('Cannot afford building.')
+                    continue
+                
+                print('Select resource set:')
+                for i, r_set in enumerate(r_sets):
+                    print(i+1, r_set)
+                
+                r_set = r_sets[int(input('Enter resource set to use >> ')) - 1]
+                map.generate_map_img(choices)
+                choice = int(input('Enter location to build >> ')) - 1
+
+                
+                if og.buy_building(r_set, b):
+                    map.place_building(choices[choice], b)
+                else:
+                    print('Purchase failed.')
+                break
 
 def test_c():
     while True:
