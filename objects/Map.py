@@ -1,14 +1,17 @@
 from ast import literal_eval
 import json
 import os
+from re import L
 import cv2
 import numpy as np
 from scipy import ndimage
+from calculation.buildings import can_build_house
+from calculation.grid import check_equivalent, find_equivalent, find_neighbours
 from calculation.imaging import c_to_xy
 from constants.map.assets import MAP_ASSET_FILENAMES
 from constants.map.drawing import CHOICE_COLOR, CHOICE_FONT, CHOICE_FONTSCALE, CHOICE_RADIUS, CHOICE_THICKNESS
 from constants.map.positions import BORDER_SIZE
-from constants.names import B_ROAD
+from constants.names import B_HOUSE, B_ROAD, B_VILLAGE, KEY_B
 from constants.storage import FOLDER_DATA, FOLDER_ASSETS
 from objects.Building import Building
 
@@ -35,10 +38,24 @@ class Map():
         self.map[c] = building
         building.c = c
 
+        print(building.owner, c)
+
     def remove_building(self, c):
         if c in self.map:
             del self.map[c]
 
+    def get_building(self, c):
+        possible = find_equivalent(c)
+        ret = None
+
+        for p in possible:
+            ret = self.map.get(c, None)
+
+            if ret:
+                break
+        
+        return ret
+    
     def load_from_json(self):
         if os.path.exists(self.filename):
             f = open(self.filename, 'r')
@@ -64,6 +81,7 @@ class Map():
             *[BORDER_SIZE for _ in range(4)], 
             cv2.BORDER_CONSTANT, value=[255, 255, 255])
 
+        print(self.map)
         for c, building in self.map.items():
             image = cv2.imread(os.path.join(
                         FOLDER_ASSETS, MAP_ASSET_FILENAMES[building.owner][building.name]), cv2.IMREAD_UNCHANGED)
@@ -87,17 +105,70 @@ class Map():
         nw = 1000
         w, h = nw, int(h * nw/w)
         board = cv2.resize(board, (w, h))
+
         cv2.imshow("M", board)
         cv2.waitKey(0)
+        
         os.chdir('assets')
         cv2.imwrite("current_board.png", board)
+
+    def get_possible_map(self, og, building):
+        def road():
+            start = og.get_starting_house()
+            if not start:
+                return []
+
+            possible = []
+
+            for e in find_neighbours(start.c):
+                if not self.get_building(e):
+                    possible.append(e)
+            
+            for r in og.get_roads():
+                for v in find_neighbours(r.c):
+                    for e in find_neighbours(v):
+                        if not self.get_building(e):
+                            possible.append(e)
+
+            return possible
+
+        def house():
+            possible = []
+
+            for r in og.get_roads():
+                for v in find_neighbours(r.c):
+                    if can_build_house(self, v):
+                        exists = False
+
+                        for p in possible:
+                            if check_equivalent(v, p):
+                                exists = True
+                                break
+                                
+                        if not exists:
+                            possible.append(v)
+
+            return possible
+        
+        def village():
+            return [b.c for b in og.get_houses()]
+
+        cases = {
+            B_ROAD: road,
+            B_HOUSE: house,
+            B_VILLAGE: village
+        }
+
+        choices = cases[building.name]()
+
+        self.generate_map_img(choices=choices)
 
     def add_transparent_image(self, background, foreground, x_offset=None, y_offset=None):
         bg_h, bg_w, bg_channels = background.shape
         fg_h, fg_w, fg_channels = foreground.shape
 
-        assert bg_channels == 3, f'background image should have exactly 3 channels (RGB). found:{bg_channels}'
-        assert fg_channels == 4, f'foreground image should have exactly 4 channels (RGBA). found:{fg_channels}'
+        assert bg_channels == 3, f'background image should have exactly 3 channels (RGB). found: {bg_channels}'
+        assert fg_channels == 4, f'foreground image should have exactly 4 channels (RGBA). found: {fg_channels}'
 
         # center by default
         if x_offset is None:

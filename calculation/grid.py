@@ -32,6 +32,9 @@ def check_equivalent(c1, c2):
     q1, r1, s1, a1 = c1
     q2, r2, s2, a2 = c2
 
+    if c1 == c2:
+        return True
+        
     rem1, rem2 = a1 % 60, a2 % 60
     #check for edge/vertex similarity
     if rem1 != rem2:
