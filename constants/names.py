@@ -7,6 +7,10 @@ KEY_R = 'resource'
 KEY_B = 'building'
 KEY_P = 'point'
 
+KEY_PUP_QUANTITY = 'pUpQuantity'
+KEY_PUP_ACTION = 'pUpAction'
+KEY_PUP_IS_INSTANT = 'pUpIsInstant'
+
 B_HOUSE = 'House'
 B_VILLAGE = 'Village'
 B_ROAD = 'Road'
@@ -16,6 +20,7 @@ R_WATER = 'Water'
 R_MINERAL = 'Mineral'
 R_WOOD = 'Wood'
 
+R_LIST = [R_WHEAT, R_WOOD, R_WATER, R_MINERAL]
 P_FLAG_STEAL = 'Flags Stolen'
 
 C_BLACK = 'black'

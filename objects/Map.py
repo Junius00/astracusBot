@@ -105,9 +105,9 @@ class Map():
         w, h = nw, int(h * nw/w)
         board = cv2.resize(board, (w, h))
 
-        cv2.imshow("M", board)
-        cv2.waitKey(3000)
-        cv2.destroyAllWindows()
+        # cv2.imshow("M", board)
+        # cv2.waitKey(3000)
+        # cv2.destroyAllWindows()
 
         cv2.imwrite(os.path.join(FOLDER_ASSETS, "current_board.png"), board)
         

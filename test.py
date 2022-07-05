@@ -103,7 +103,7 @@ def test_build_map():
                 choice = int(input('Enter location to build >> ')) - 1
 
                 
-                if og.buy_building(r_set, b):
+                if og.buy_building(b, r_set=r_set):
                     map.place_building(choices[choice], b)
                 else:
                     print('Purchase failed.')
