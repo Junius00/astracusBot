@@ -1,3 +1,5 @@
+TOKEN = "5388615241:AAHZGvOPksoEUU-R05wT70ef-OvIn30CvUo"
+
 COMM_CIN = 'commCIn'
 COMM_COUT = 'commCOut'
 
