@@ -1,38 +1,46 @@
-from telegram import Update
-from telegram.ext import *
+import asyncio
+from telegram.ext import Application, CommandHandler, MessageHandler, filters
+from bot_needs.comm import get_chat_id
+from bot_needs.commands.admin import BOTCOMMANDS_ADMIN, COMMAND_HANDLERS_ADMIN
+from bot_needs.commands.common import BOTCOMMANDS_COMMON, COMMAND_HANDLERS_COMMON
+from bot_needs.commands.og import BOTCOMMANDS_OG, COMMAND_HANDLERS_OG
 
-from constants.bot import TOKEN
+from constants.bot.common import TOKEN
+from constants.bot.users import ROLE_ADMIN, WHITELIST
+from constants.names import OG_AVARI, OG_KELGRAS, OG_LEVIATHAN, OG_THERON
+import globals.bot as g_bot
+from objects.BotState import BotState
 
-class BotState():
-    def __init__(self):
-        #stores { chat_id: pending_handler }
-        self.pending = {}
+async def message_handler(update, context):
+    chat_id = get_chat_id(update)
+    await g_bot.STATE.get_handler(chat_id)(update, context)
     
-    def modify_pending(self, chat_id, handler):
-        self.pending[chat_id] = handler
-    
-    def clear_pending(self, chat_id):
-        if chat_id in self.pending:
-            del self.pending[chat_id]
-    
-    def default_handler(self, update, context):
-        pass
-
-    def get_handler(self, chat_id):
-        return self.pending.get(chat_id, self.default_handler)
-
-def message_handler(state, update, context):
-    chat_id = update.message.chat.id
-
-    state.get_handler(chat_id)()
-
 def main():
-    updater = Updater(token=TOKEN)
-    dispatcher = updater.dispatcher
+    app = Application.builder().token(TOKEN).build()
 
-    state = BotState()
-    dispatcher.add_handler(MessageHandler(Filters.text, lambda update, context: message_handler(state, update, context)))
+    #adding commands for certain whitelisted people
+    common = []
+    admins = []
+    ogs = []
+    
+    for username, role in WHITELIST.items():
+        if role == ROLE_ADMIN:
+            common.append(username)
+            admins.append(username)
+        elif role in [ OG_AVARI, OG_KELGRAS, OG_LEVIATHAN, OG_THERON ]:
+            common.append(username)
+            ogs.append(username)
 
-    updater.start_polling()
+    for cstr, command in COMMAND_HANDLERS_COMMON.items():
+        app.add_handler(CommandHandler(cstr, command, filters=filters.User(username=common)))
+    for cstr, command in COMMAND_HANDLERS_ADMIN.items():
+        app.add_handler(CommandHandler(cstr, command, filters=filters.User(username=admins)))
+    for cstr, command in COMMAND_HANDLERS_OG.items():
+        app.add_handler(CommandHandler(cstr, command, filters=filters.User(username=ogs)))
 
+    app.add_handler(MessageHandler(filters.TEXT, message_handler))
 
+    g_bot.STATE = BotState(app)
+    app.run_polling()
+
+main()
