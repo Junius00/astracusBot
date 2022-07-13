@@ -1,9 +1,9 @@
 import asyncio
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from bot_needs.comm import get_chat_id
-from bot_needs.commands.admin import BOTCOMMANDS_ADMIN, COMMAND_HANDLERS_ADMIN
-from bot_needs.commands.common import BOTCOMMANDS_COMMON, COMMAND_HANDLERS_COMMON
-from bot_needs.commands.og import BOTCOMMANDS_OG, COMMAND_HANDLERS_OG
+from bot_needs.commands.admin import COMMAND_HANDLERS_ADMIN
+from bot_needs.commands.common import COMMAND_HANDLERS_COMMON
+from bot_needs.commands.og import COMMAND_HANDLERS_OG
 
 from constants.bot.common import TOKEN
 from constants.bot.users import ROLE_ADMIN, WHITELIST

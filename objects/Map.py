@@ -29,6 +29,7 @@ class Map():
     def __init__(self):
         self.filename = os.path.join(FOLDER_DATA, "map.json")
         self.map_img = os.path.join(FOLDER_ASSETS, "board.png")
+        self.current_map_img = os.path.join(FOLDER_ASSETS, "current_board.png")
         self.load_from_json()
 
     def reset_map(self):
@@ -109,7 +110,7 @@ class Map():
         # cv2.waitKey(3000)
         # cv2.destroyAllWindows()
 
-        cv2.imwrite(os.path.join(FOLDER_ASSETS, "current_board.png"), board)
+        cv2.imwrite(self.current_map_img, board)
         
     def get_possible_choices(self, og, building):
         def road():

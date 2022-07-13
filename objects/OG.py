@@ -89,6 +89,9 @@ class OG():
     def get_resources(self):
         return self.items[KEY_R]
 
+    def get_resource_count(self, r_key):
+        return self.get_resources()[r_key]
+    
     def add_resource(self, r_key, amount):
         if self.force_resource:
             r_key = self.force_resource
@@ -100,6 +103,13 @@ class OG():
 
         self.items[KEY_R][r_key] += amount
     
+    def delete_resource(self, r_key, amount):
+        cur = self.items[KEY_R][r_key]
+        new_amount = cur - amount
+        if new_amount < 0:
+            new_amount = 0
+
+        
     #returns True and uses if possible, otherwise False and no change
     def use_resource(self, r_key, amount):
         cur = self.items[KEY_R][r_key]
@@ -131,7 +141,7 @@ class OG():
         return True
 
     def calculate_points(self):
-        pass
+        return 9
     
     def can_say_no(self):
         return self.just_say_no_count > 0
