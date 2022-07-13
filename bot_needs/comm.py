@@ -6,8 +6,8 @@ def get_chat_id(update):
 
 async def BOT_COMM(chat_id, dir, msg, options=None, on_response=None):
     if dir == COMM_CIN:
-        if not options or not on_response:
-            raise ValueError("comm CIN requires an options list and an on_response callback.")
+        if not on_response:
+            raise ValueError("comm CIN requires an on_response callback.")
         
         #telegram get input
         STATE.modify_pending(chat_id, lambda update, context: on_response(update.message.chat.text))

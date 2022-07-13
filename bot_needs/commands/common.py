@@ -18,7 +18,10 @@ async def start_handler(update, context):
     await g_bot.STATE.send_message(chat_id, f'Welcome to AstracusBot. You are logged in as {role}. Please select a command to continue.')
     
 async def view_map(update, context):
-    pass
+    chat_id = get_chat_id(update)
+    
+    g_env.MAP.generate_map_img()
+    await g_bot.STATE.send_image(chat_id, g_env.MAP.current_map_img)
 
 BOTCOMMANDS_COMMON = [
     BotCommand('viewmap', 'View the current map.')

@@ -21,7 +21,6 @@ def get_user_og(ogs, chat_id):
         if ogs[og].active_id == chat_id:
             return og
 
-
 async def overview(update, context):
     chat_id = get_chat_id(update)
     og = get_user_og(g_env.OGS, chat_id)

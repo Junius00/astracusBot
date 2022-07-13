@@ -26,6 +26,10 @@ class BotState():
 
         await self.app.bot.send_message(chat_id=chat_id, text=msg, reply_markup=keys)
 
+    async def send_image(self, chat_id, img_path):
+        with open(img_path, 'rb') as f:
+            await self.app.bot.send_photo(chat_id, f)
+    
     async def default_handler(self, update, context):
         await self.send_message(get_chat_id(update), 'It seems that you are not eligible to use this bot. Please contact @juniuspun or @chknuggets for assistance if you feel this is a mistake.')
 
