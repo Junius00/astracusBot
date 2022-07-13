@@ -45,7 +45,7 @@ def main():
 
     app.add_handler(MessageHandler(filters.TEXT, message_handler))
 
-    init_global()
+    init_global(app)
 
     app.run_polling()
 

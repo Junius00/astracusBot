@@ -5,14 +5,16 @@ from constants.names import B_ROAD, R_LIST
 from objects.Building import Building
 from bot_needs.comm import BOT_COMM
 
+async def fools_luck_day3(map, og_self, ogs_others):
+    pass
 
 async def fools_luck(map, og_self, ogs_others):
     og_self.r_multiplier = 1.5
     await BOT_COMM(og_self.active_id, COMM_COUT, "Your next station game will yield 1.5x resources.")
 
-async def dice_of_destiny(map, og_self, ogs_others):
-    dice = randint(1, 6)
-    copy_ending = 'ies' if dice > 1 else 'y'
+async def randomizer_of_destiny(map, og_self, ogs_others):
+    dice = randint(0, 50)
+    copy_ending = 'ies' if dice != 1 else 'y'
     
     async def response(r):
         og_self.add_resource(r, dice)
@@ -21,15 +23,43 @@ async def dice_of_destiny(map, og_self, ogs_others):
     await BOT_COMM(og_self.active_id, COMM_CIN, f"Please choose a resource type to get {dice} cop{copy_ending} of.", options=R_LIST, on_response=response)
 
 async def power_of_trade(map, og_self, ogs_others):
-    og_self.has_wardin = True
-    await BOT_COMM(og_self.active_id, COMM_COUT, 'Trade with Wardin has been activated. You can now trade 2 of any resource for 1 copy of another.')
+    chat_id = og_self.active_id
+
+    async def on_resp_count(rget, rgive, count):
+        try:
+            count = int(count)
+        except:
+            await BOT_COMM(chat_id, COMM_CIN, 'Please enter a valid integer.', on_response=lambda c: on_resp_count(rget, rgive, c))
+            return
+
+        cur = og_self.get_resource(rgive)
+        if cur < count:
+            await BOT_COMM(chat_id, COMM_COUT, f'You don\'t have enough {rgive} to give. Please try the command again. [Current amount: {cur}]')
+            return
+
+        og_self.delete_resource(rgive, count)
+        og_self.add_resource(rget, count)
+
+        await BOT_COMM(chat_id, COMM_COUT, f'Successfully traded {count} {rgive} for {count} {rget}!')
+    
+    async def on_resp_rgive(rget, rgive):
+        if rget == rgive:
+            await BOT_COMM(chat_id, COMM_COUT, 'You cannot trade the same resource. Please try the command again.')
+            return
+        
+        await BOT_COMM(chat_id, COMM_CIN, f'Please enter the amount of {rgive} to give for {rget}.', on_response=lambda count: on_resp_count(rget, rgive, count))
+    
+    async def on_resp_rget(rget):
+        await BOT_COMM(chat_id, COMM_CIN, f'Please choose a resource to give in return for {rget}.', options=[r for r in R_LIST if r != rget], on_response=lambda rgive: on_resp_rgive(rget, rgive))
+    await BOT_COMM(chat_id, COMM_CIN, 'Please choose a resource to receive.', options=R_LIST, on_response=on_resp_rget)
 
 async def barter_trade(map, og_self, ogs_others):
+    chat_id = og_self.active_id
     async def response(r):
         og_self.force_resource = r
-        await BOT_COMM(og_self.active_id, COMM_COUT, f'Done! Your next resource gained will be {r}.')
+        await BOT_COMM(chat_id, COMM_COUT, f'Done! Your next resource gained will be {r}.')
     
-    await BOT_COMM(og_self.active_id, COMM_CIN, 'Please choose a resource to gain as your next station game reward.', options=R_LIST, on_response=response)
+    await BOT_COMM(chat_id, COMM_CIN, 'Please choose a resource to gain as your next station game reward.', options=R_LIST, on_response=response)
 
 async def insurance(map, og_self, ogs_others):
     og_self.has_insurance = True
@@ -44,6 +74,7 @@ async def paving_the_way(map, og_self, ogs_others):
     map.generate_map_img(choices=choices)
 
     async def response(i):
+        i = int(i)
         og_self.buy_building(b, use_resources=False)
         map.place_building(choices[i-1], b)
         await BOT_COMM(og_self.active_id, COMM_COUT, 'A road has been placed.')
@@ -61,7 +92,8 @@ async def road_block(map, og_self, ogs_others):
 
     async def response(res):
         if res == RESP_YES:
-            BOT_COMM(og_self.active_id, COMM_COUT, '')
+            BOT_COMM(og_self.active_id, COMM_COUT, 'Oh no! The tribe has activated Just Say No! Too bad, nothing happened!')
+            BOT_COMM(og_target.active_id, COMM_COUT, 'Just Say No is activated. You successfully avoided another tribe\'s action against you! Joke\'s on them!')
         elif res == RESP_NO:
             await finish_action()
     
@@ -76,7 +108,6 @@ async def road_block(map, og_self, ogs_others):
     await finish_action()
 
 async def sneaky_thief(map, og_self, ogs_others):
-
     pass
 
 async def just_say_no(map, og_self, ogs_others):

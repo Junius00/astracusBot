@@ -14,7 +14,10 @@ class Building():
         self.name = name
         self.points = B_POINTS[name]
         self.ratio = B_RATIOS[name]
-
+    
+    def get_price_list(self):
+        return [self.ratio[0], *self.ratio[1]]
+    
     #returns a list of possible resource combinations to build if possible, else returns None
     def try_build(self, og):
         res = og.get_resources()

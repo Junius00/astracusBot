@@ -55,14 +55,14 @@ async def delete_resource(update, context):
             await BOT_COMM(id, COMM_CIN, 'An invalid amount was entered. Please enter an integer amount (greater than 0) to remove.', on_response=lambda count: on_resp_number(name, r, count))
             return
 
-        g_env.OGS[name].add_resource(r, count)
+        g_env.OGS[name].delete_resource(r, count)
         await BOT_COMM(id, COMM_COUT, f'{count} {r} has been removed from {name}. [New total: {g_env.OGS[name].get_resource_count(r)} {r}]')
 
     async def on_resp_resource(name, r):
         await BOT_COMM(id, COMM_CIN, 'Please enter an integer amount (greater than 0) to remove.', on_response=lambda count: on_resp_number(name, r, count))
 
     async def on_resp_og(name):
-        await BOT_COMM(id, COMM_CIN, 'Please choose a resource to add.', options=R_LIST, on_response=lambda r: on_resp_resource(name, r))
+        await BOT_COMM(id, COMM_CIN, 'Please choose a resource to remove.', options=R_LIST, on_response=lambda r: on_resp_resource(name, r))
 
     await BOT_COMM(id, COMM_CIN, 'Please choose an OG to add resources for.', options=OGS_LIST, on_response=on_resp_og)
 

@@ -14,6 +14,9 @@ async def start_handler(update, context):
     add_bot_commands = BOTCOMMANDS_ADMIN if role == ROLE_ADMIN else BOTCOMMANDS_OG
     scope = BotCommandScopeChat(chat_id)
 
+    if role != ROLE_ADMIN:
+        g_env.OGS[role].set_active_id(chat_id)
+    
     await g_bot.STATE.app.bot.set_my_commands(BOTCOMMANDS_COMMON + add_bot_commands, scope=scope)
     await g_bot.STATE.send_message(chat_id, f'Welcome to AstracusBot. You are logged in as {role}. Please select a command to continue.')
     

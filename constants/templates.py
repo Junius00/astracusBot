@@ -9,10 +9,10 @@ def GET_B_TEMPLATE():
 
 def GET_R_TEMPLATE(): 
     return {
-        R_WATER: 10000,
-        R_WOOD: 10000,
-        R_MINERAL: 10000,
-        R_WHEAT: 10000
+        R_WATER: 0,
+        R_WOOD: 0,
+        R_MINERAL: 0,
+        R_WHEAT: 0
     }
 
 def GET_P_TEMPLATE():

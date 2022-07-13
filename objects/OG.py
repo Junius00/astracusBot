@@ -20,9 +20,6 @@ class OG():
         # used to increase/decrease resource gain
         self.r_multiplier = 1
 
-        # Wardin: trade 2 for 1
-        self.has_wardin = False
-
         # Barter Trade: force next resource to be this
         self.force_resource = None
 
@@ -112,6 +109,8 @@ class OG():
         if new_amount < 0:
             new_amount = 0
 
+        self.items[KEY_R][r_key] = new_amount
+
     # returns True and uses if possible, otherwise False and no change
 
     def use_resource(self, r_key, amount):
@@ -132,7 +131,7 @@ class OG():
 
             old_res = self.items[KEY_R].copy()
 
-            prices = [building.ratio[0], *building.ratio[1]]
+            prices = building.get_price_list()
             for p, r in zip(prices, r_set):
                 success = self.use_resource(r, p)
 

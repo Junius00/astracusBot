@@ -1,5 +1,5 @@
 from constants.names import KEY_PUP_ACTION, KEY_PUP_IS_INSTANT, KEY_PUP_QUANTITY
-from powerups.actions import barter_trade, dice_of_destiny, fate_of_hell, fools_luck, insurance, just_say_no, paving_the_way, power_of_trade, road_block, sneaky_thief, telescope
+from powerups.actions import barter_trade, randomizer_of_destiny, fate_of_hell, fools_luck, insurance, just_say_no, paving_the_way, power_of_trade, road_block, sneaky_thief, telescope
 
 #Booster Cards
 PUP_FOOLS_LUCK = "Fool's Luck"
@@ -24,7 +24,7 @@ PUP_INFO = {
     },
     PUP_DICE_OF_DESTINY: {
         KEY_PUP_QUANTITY: 4,
-        KEY_PUP_ACTION: dice_of_destiny,
+        KEY_PUP_ACTION: randomizer_of_destiny,
         KEY_PUP_IS_INSTANT: False
     },
     PUP_POWER_OF_TRADE: {
