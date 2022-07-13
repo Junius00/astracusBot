@@ -92,6 +92,7 @@ async def road_block(map, og_self, ogs_others):
 
     async def response(res):
         if res == RESP_YES:
+            og_target.say_no()
             BOT_COMM(og_self.active_id, COMM_COUT, 'Oh no! The tribe has activated Just Say No! Too bad, nothing happened!')
             BOT_COMM(og_target.active_id, COMM_COUT, 'Just Say No is activated. You successfully avoided another tribe\'s action against you! Joke\'s on them!')
         elif res == RESP_NO:

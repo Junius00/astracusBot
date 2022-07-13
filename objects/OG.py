@@ -149,5 +149,8 @@ class OG():
     def can_say_no(self):
         return self.just_say_no_count > 0
 
+    def say_no(self):
+        self.just_say_no_count -= 1
+        
     def use_modifier(self, modifier_function, *args, **kwargs):
         modifier_function(self, *args, **kwargs)
