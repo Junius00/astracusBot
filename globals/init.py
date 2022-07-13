@@ -6,7 +6,7 @@ from objects.Map import Map
 from objects.Building import Building
 from constants.names import B_HOUSE
 from constants.map.positions import START_AVARI, START_KELGRAS, START_LEVIATHAN, START_THERON
-
+from constants.powerups import PUP_INFO
 
 def init_global(app):
     for og in g_env.OGS.keys():
@@ -22,4 +22,6 @@ def init_global(app):
         og.set_starting_house(b)
         g_env.MAP.place_building(c, b)
 
+    g_env.PUP_TRACKER = PUP_INFO()
+    
     g_bot.STATE = BotState(app)

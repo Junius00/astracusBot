@@ -1,8 +1,13 @@
 from constants.bot.common import COMM_CIN, COMM_COUT
 import globals.bot as g_bot
+import globals.env as g_env
 
 def get_chat_id(update):
     return update.message.chat.id
+
+async def BOT_MAP(chat_id, choices=None):
+    map_img = g_env.MAP.generate_map_img(choices=choices)
+    await g_bot.STATE.send_image(chat_id, map_img)
 
 async def BOT_COMM(chat_id, dir, msg, options=None, on_response=None):
     if dir == COMM_CIN:

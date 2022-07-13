@@ -1,6 +1,7 @@
 from telegram import BotCommand, BotCommandScopeChat
-from bot_needs.comm import get_chat_id
+from bot_needs.comm import BOT_MAP, get_chat_id
 from bot_needs.commands.admin import BOTCOMMANDS_ADMIN
+from bot_needs.commands.alerts import alerted_map_lock
 from bot_needs.commands.og import BOTCOMMANDS_OG
 from bot_needs.user import get_identity, get_user
 from constants.bot.users import ROLE_ADMIN
@@ -22,11 +23,12 @@ async def start_handler(update, context):
     
 async def view_map(update, context):
     chat_id = get_chat_id(update)
-    
-    map_img = g_env.MAP.generate_map_img()
-    await g_bot.STATE.send_image(chat_id, map_img)
+
+    if not await alerted_map_lock(chat_id):
+        await BOT_MAP(chat_id)
 
 BOTCOMMANDS_COMMON = [
+    BotCommand('start', 'Take control of your OG / Sign in as an admin, depending on who you are.'),
     BotCommand('viewmap', 'View the current map.')
 ]
 

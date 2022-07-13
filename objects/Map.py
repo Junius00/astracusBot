@@ -1,7 +1,6 @@
 from ast import literal_eval
 import json
 import os
-from re import L
 import cv2
 import numpy as np
 from scipy import ndimage
@@ -27,10 +26,22 @@ from objects.Building import Building
 
 class Map():
     def __init__(self):
+        #prevents OGs from all editing the map at once; prevent rule breaking
+        self.map_lock = False
+
         self.filename = os.path.join(FOLDER_DATA, "map.json")
         self.map_img = os.path.join(FOLDER_ASSETS, "board.png")
         self.load_from_json()
 
+    def lock(self):
+        self.map_lock = True
+    
+    def unlock(self):
+        self.map_lock = False
+    
+    def is_locked(self):
+        return self.map_lock
+    
     def reset_map(self):
         self.map = {}
 
@@ -38,15 +49,18 @@ class Map():
         self.map[c] = building
         building.c = c
 
-    def remove_building(self, c):
-        if c in self.map:
-            del self.map[c]
+    def remove_building(self, building):
+        for c in find_equivalent(building.c, include_c=True):
+            if c in self.map:
+                del self.map[c]
+                building.c = None
+
+                return True
+        
+        return False
 
     def get_building(self, c):
-        if c in self.map:
-            return self.map[c]
-        
-        possible = find_equivalent(c)
+        possible = find_equivalent(c, include_c=True)
         ret = None
 
         for p in possible:
@@ -112,7 +126,7 @@ class Map():
         #cv2.imwrite(self.current_map_img, board)
         return cv2.imencode('.png', board)[1].tobytes()
         
-    def get_possible_choices(self, og, building):
+    def get_possible_choices(self, og, building, override_building_type=None):
         def road():
             start = og.get_starting_house()
             if not start:
@@ -165,7 +179,8 @@ class Map():
             B_VILLAGE: village
         }
 
-        choices = cases[building.name]()
+        choice = override_building_type if override_building_type else building.name
+        choices = cases[choice]()
         return choices
 
     def add_transparent_image(self, background, foreground, x_offset=None, y_offset=None):

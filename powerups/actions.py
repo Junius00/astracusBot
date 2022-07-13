@@ -3,8 +3,7 @@ from constants.bot.common import RESP_NO, RESP_YES, COMM_CIN, COMM_COUT
 from constants.names import B_ROAD, R_LIST
 
 from objects.Building import Building
-from bot_needs.comm import BOT_COMM
-import globals.bot as g_bot
+from bot_needs.comm import BOT_COMM, BOT_MAP
 
 async def fools_luck_day3(map, og_self, ogs_others):
     pass
@@ -72,7 +71,6 @@ async def paving_the_way(map, og_self, ogs_others):
     b.owner = og_self.name
 
     choices = map.get_possible_choices(og_self, b)
-    map_img = map.generate_map_img(choices=choices)
 
     async def response(i):
         i = int(i)
@@ -80,7 +78,7 @@ async def paving_the_way(map, og_self, ogs_others):
         map.place_building(choices[i-1], b)
         await BOT_COMM(og_self.active_id, COMM_COUT, 'A road has been placed.')
 
-    await g_bot.STATE.send_image(og_self.active_id, map_img)
+    await BOT_MAP(og_self.active_id, map.generate_map_img(choices))
     await BOT_COMM(og_self.active_id, COMM_CIN, 'Please choose a road option from the map image.', options=[x + 1 for x in range(len(choices))], on_response=response)
 
 async def road_block(map, og_self, ogs_others):

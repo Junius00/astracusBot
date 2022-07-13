@@ -2,6 +2,7 @@
 admin functions:
 - add resource of type
 - delete resource of type
+- move collateral buildings
 - get scores
 > individual
 > everyone
@@ -15,8 +16,9 @@ import math
 from telegram import BotCommand
 from bot_needs.comm import BOT_COMM, get_chat_id
 from constants.bot.common import COMM_CIN, COMM_COUT
-from constants.names import OGS_LIST, R_LIST
+from constants.names import B_LIST, B_ROAD, OGS_LIST, R_LIST
 import globals.env as g_env
+from objects.Building import Building
 
 async def add_resource(update, context):
     id = get_chat_id(update)
@@ -73,6 +75,48 @@ async def delete_resource(update, context):
 
     await BOT_COMM(id, COMM_CIN, 'Please choose an OG to add resources for.', options=OGS_LIST, on_response=on_resp_og)
 
+async def move_collateral_buildings(update, context):
+    id = get_chat_id(update)
+
+    async def on_resp_move_count(btype, og_name_from, og_name_to, move_count):
+        move_count = int(move_count)
+        cur = move_count
+        avail = g_env.OGS[og_name_from].get_btype(btype)
+
+        while cur > 0:
+            b = Building().clone(avail[-1])
+
+            #deregister from map; coordinates removed
+            g_env.MAP.remove_building(b)
+            #deregister from OG
+            if g_env.OGS[og_name_from].delete_building(b):
+                #add to winner OG collateral
+                g_env.OGS[og_name_to].add_collateral_building(b)
+
+            cur -= 1
+
+
+        await BOT_COMM(id, COMM_COUT, f'{move_count} {btype}(s) moved from {og_name_from} to {og_name_to}.')            
+
+    async def on_resp_og_to(btype, og_name_from, og_name_to):
+        avail = g_env.OGS[og_name_from].get_btype(btype)
+        if not avail:
+            await BOT_COMM(id, COMM_COUT, f'{og_name_from} does not have {btype}s to give up.')
+            return
+        
+        await BOT_COMM(id, COMM_CIN, f'Please select the number of {btype}s to move.', 
+        options=list(range(1, len(avail) + 1)), on_response=lambda move_count: on_resp_move_count(btype, og_name_from, og_name_to, move_count))
+        
+    async def on_resp_og_from(btype, og_name_from):
+        await BOT_COMM(id, COMM_CIN, f'Please select the OG that will receive {btype}s.', 
+        options=[og_name for og_name in OGS_LIST if og_name != og_name_from], on_response=lambda og_name_to: on_resp_og_to(btype, og_name_from, og_name_to))
+
+    async def on_resp_btype(btype):
+        await BOT_COMM(id, COMM_CIN, f'Please select the OG that has to give up {btype}s.', options=OGS_LIST, on_response=lambda og_name_from: on_resp_og_from(btype, og_name_from))
+
+    #disallow moving roads
+    await BOT_COMM(id, COMM_CIN, 'Please choose a buliding type to move.', options=[btype for btype in B_LIST if btype != B_ROAD], on_response=on_resp_btype)
+
 async def get_scores(update, context):
     id = get_chat_id(update)
     
@@ -104,14 +148,16 @@ async def add_misc_points(update, context):
 BOTCOMMANDS_ADMIN = [
     BotCommand('addresource', 'Add a number of resources to an OG.'),
     BotCommand('deleteresource', 'Delete a number of resources to an OG.'),
-    BotCommand('viewresources', 'View resources of all OGs.'),
+    BotCommand('movecollateralbuildings', 'Move collateral buildings from one OG to another.'),
     BotCommand('getscores', 'Get scores of all OGs.'),
+    BotCommand('viewresources', 'View resources of all OGs.'),
     BotCommand('addmiscpoints', 'Add miscellaneous points to an OG.'),
 ]
 
 COMMAND_HANDLERS_ADMIN = {
     'addresource': add_resource,
     'deleteresource': delete_resource,
+    'movecollateralbuildings': move_collateral_buildings,
     'getscores': get_scores,
     'viewresources': view_resources,
     'addmiscpoints': add_misc_points

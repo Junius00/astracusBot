@@ -32,12 +32,15 @@ class OG():
         # Just Say No: negate the next targeted action
         self.just_say_no_count = 0
 
+        # Collateral: store collateral buildings won from other OGs
+        self.collateral_buildings = []
+
         self.load_from_json()
 
     async def set_active_id(self, new_id):
         if self.active_id:
             await BOT_COMM(self.active_id, COMM_COUT, 'You have been deregistered. Please check within your OG to see who took control, or use /start to take control back.')
-        
+
         self.active_id = new_id
 
     def reset_items(self):
@@ -59,6 +62,9 @@ class OG():
             return None
 
         return houses[0]
+
+    def get_building_type(self, btype):
+        return self.items[KEY_B][btype]
 
     def get_houses(self):
         return self.items[KEY_B][B_HOUSE]
@@ -150,6 +156,15 @@ class OG():
         self.items[KEY_B][building.name].append(building)
         return True
 
+    #returns True if deleted, else False and no change (cannot find building)
+    def delete_building(self, building):
+        for i, b in enumerate(self.items[KEY_B][building.name]):
+            if b.compare(building):
+                del self.items[KEY_B][building.name][i]
+                return True
+
+        return False
+
     def calculate_points(self):
         return 9
 
@@ -184,3 +199,23 @@ class OG():
     async def use_powerup(self, index):
         await self.get_powerups()[index].activate(g_env.MAP, self, [og for og_name, og in g_env.OGS.items() if og_name != self.name])
         del self.items[KEY_PUP][index]
+
+    def add_collateral_building(self, building):
+        building.owner = self.name
+
+        self.collateral_buildings.append(building)
+        self.collateral_buildings = sorted(self.collateral_buildings, key=lambda b: b.name)
+    
+    def count_collateral_buildings(self):
+        counts = {
+            B_HOUSE: 0,
+            B_VILLAGE: 0
+        }
+
+        for b in self.collateral_buildings:
+            counts[b.name] += 1
+
+        return counts
+
+    def pretty_print_collateral_buildings(self):
+        return ', '.join(f'{name}: {count}' for name, count in self.count_collateral_buildings().items())

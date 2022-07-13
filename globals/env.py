@@ -1,5 +1,4 @@
 from constants.names import OG_AVARI, OG_KELGRAS, OG_LEVIATHAN, OG_THERON
-from constants.powerups import PUP_INFO
 
 
 OGS = {
@@ -10,4 +9,4 @@ OGS = {
 }
 
 MAP = None
-PUP_TRACKER = PUP_INFO()
+PUP_TRACKER = None
