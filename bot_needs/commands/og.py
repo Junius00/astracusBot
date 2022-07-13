@@ -12,14 +12,17 @@ user functions:
 from telegram import BotCommand
 from bot_needs.comm import get_chat_id, BOT_COMM
 from constants.bot.common import COMM_COUT, COMM_CIN
+from constants.names import B_HOUSE, B_LIST, B_ROAD, B_VILLAGE
 from objects.Building import Building
 import globals.env as g_env
+import globals.bot as g_bot
 
 
 def get_user_og(ogs, chat_id):
     for og in ogs.keys():
         if ogs[og].active_id == chat_id:
             return og
+
 
 async def overview(update, context):
     chat_id = get_chat_id(update)
@@ -37,24 +40,33 @@ async def overview(update, context):
 async def buy_building(update, context):
     chat_id = get_chat_id(update)
     og = get_user_og(g_env.OGS, chat_id)
+    b = Building()
+    choices = g_env.MAP.get_possible_choices(og, b)
+
+    async def on_resp_building_loc(type, set, loc):
+        if g_env.OGS[og].buy_building(b, r_set=set):
+            g_env.MAP.place_building(choices[loc], b)
+            await BOT_COMM(chat_id, COMM_COUT, f"Building of type {type} placed at location {loc}.")
+        else:
+            await BOT_COMM(chat_id, COMM_COUT, "Purchase failed for unknown reasons.")
 
     async def on_resp_resource_set(type, set):
-        pass
+        g_env.MAP.generate_map_img(choices)
+        await g_bot.STATE.send_image(chat_id, g_env.MAP.current_map_img)
+        await BOT_COMM(chat_id, COMM_CIN, f"Where do you want to build a {type}?", options=list(range(1, len(choices) + 1)), on_response=lambda loc: on_resp_building_loc(type, set, loc))
 
     async def on_resp_building_type(type):
-        b = Building()
         b.set_name(type)
         b.owner = og.name
         r_sets = b.try_build(og)
-        choices = g_env.MAP.get_possible_choices(og, b)
         if not choices:
-            await BOT_COMM(chat_id, COMM_COUT, "No options available.")
+            await BOT_COMM(chat_id, COMM_COUT, "No locations available.")
         elif not r_sets:
             await BOT_COMM(chat_id, COMM_COUT, "Cannot afford building.")
         else:
-            await BOT_COMM(chat_id, COMM_CIN, )
+            await BOT_COMM(chat_id, COMM_CIN, "Select resource set:", options=r_sets, on_response=lambda set: on_resp_resource_set(type, set))
 
-    await BOT_COMM(chat_id, COMM_CIN, "", options=on_resp_building_type)
+    await BOT_COMM(chat_id, COMM_CIN, "Please enter building type.", options=B_LIST, on_response=on_resp_building_type)
 
 
 async def buy_powerup_card(update, context):

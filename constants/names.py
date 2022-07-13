@@ -17,6 +17,8 @@ B_HOUSE = 'House'
 B_VILLAGE = 'Village'
 B_ROAD = 'Road'
 
+B_LIST = [B_HOUSE, B_VILLAGE, B_ROAD]
+
 R_WHEAT = 'Wheat'
 R_WATER = 'Water'
 R_MINERAL = 'Mineral'
