@@ -11,6 +11,7 @@ admin functions:
 - add misc points (e.g. flag stealing)
 """
 
+import math
 from telegram import BotCommand
 from bot_needs.comm import BOT_COMM, get_chat_id
 from constants.bot.common import COMM_CIN, COMM_COUT
@@ -26,10 +27,14 @@ async def add_resource(update, context):
         except:
             await BOT_COMM(id, COMM_CIN, 'An invalid amount was entered. Please enter an integer amount (greater than 0) to add.', on_response=lambda count: on_resp_number(name, r, count))
             return
-
-        multi = g_env.OGS[name].r_multiplier
-        g_env.OGS[name].add_resource(r, count)
-        await BOT_COMM(id, COMM_COUT, f'{count} {r} has been added to {name} ({multi:.1f}x multiplier applied). [New total: {g_env.OGS[name].get_resource_count(r)} {r}]')
+        
+        og = g_env.OGS[name]
+        
+        multi = og.r_multiplier
+        og.add_resource(r, count)
+        added = math.ceil(count * multi)
+        await BOT_COMM(id, COMM_COUT, f'{added} {r} has been added to {name} ({multi:.1f}x multiplier applied). [New total: {og.get_resource_count(r)} {r}]')
+        await BOT_COMM(og.active_id, COMM_COUT, f'You have earned {added} {r}! ({multi:.1f}x multiplier applied) [New total: {og.get_resource_count(r)} {r}]')
 
     async def on_resp_resource(name, r):
         await BOT_COMM(id, COMM_CIN, 'Please enter an integer amount (greater than 0) to add.', on_response=lambda count: on_resp_number(name, r, count))
@@ -55,8 +60,10 @@ async def delete_resource(update, context):
             await BOT_COMM(id, COMM_CIN, 'An invalid amount was entered. Please enter an integer amount (greater than 0) to remove.', on_response=lambda count: on_resp_number(name, r, count))
             return
 
-        g_env.OGS[name].delete_resource(r, count)
-        await BOT_COMM(id, COMM_COUT, f'{count} {r} has been removed from {name}. [New total: {g_env.OGS[name].get_resource_count(r)} {r}]')
+        og = g_env.OGS[name]
+        og.delete_resource(r, count)
+        await BOT_COMM(id, COMM_COUT, f'{count} {r} has been removed from {name}. [New total: {og.get_resource_count(r)} {r}]')
+        await BOT_COMM(og.active_id, COMM_COUT, f'{count} {r} has been removed from you! [New total: {og.get_resource_count(r)} {r}]')
 
     async def on_resp_resource(name, r):
         await BOT_COMM(id, COMM_CIN, 'Please enter an integer amount (greater than 0) to remove.', on_response=lambda count: on_resp_number(name, r, count))

@@ -1,11 +1,14 @@
 import json
 import math
 import os
-from constants.names import B_HOUSE, B_ROAD, B_VILLAGE, KEY_B, KEY_P, KEY_R, R_MINERAL, R_WATER, R_WHEAT, R_WOOD
+from bot_needs.comm import BOT_COMM
+from constants.bot.common import COMM_COUT
+from constants.names import B_HOUSE, B_ROAD, B_VILLAGE, KEY_B, KEY_P, KEY_PUP, KEY_R, R_MINERAL, R_WATER, R_WHEAT, R_WOOD
 from constants.og import DOMINANT_RESOURCES
 from constants.storage import FOLDER_DATA
 from constants.templates import GET_B_TEMPLATE, GET_P_TEMPLATE, GET_R_TEMPLATE
 from objects.Building import Building
+import globals.env as g_env
 
 
 class OG():
@@ -31,14 +34,18 @@ class OG():
 
         self.load_from_json()
 
-    def set_active_id(self, new_id):
+    async def set_active_id(self, new_id):
+        if self.active_id:
+            await BOT_COMM(self.active_id, COMM_COUT, 'You have been deregistered. Please check within your OG to see who took control, or use /start to take control back.')
+        
         self.active_id = new_id
 
     def reset_items(self):
         self.items = {
             KEY_B: GET_B_TEMPLATE(),
             KEY_R: GET_R_TEMPLATE(),
-            KEY_P: GET_P_TEMPLATE()
+            KEY_P: GET_P_TEMPLATE(),
+            KEY_PUP: []
         }
 
     def set_starting_house(self, house):
@@ -151,6 +158,29 @@ class OG():
 
     def say_no(self):
         self.just_say_no_count -= 1
+
+    #returns True is possible, otherwise False and no change
+    def buy_powerup(self, pup, r_set):
+        old_res = self.items[KEY_R].copy()
+
+        prices = pup.get_price_list()
+        for p, r in zip(prices, r_set):
+            success = self.use_resource(r, p)
+
+            #revert immediately if fail
+            if not success:
+                self.items[KEY_R] = old_res
+                return False
         
-    def use_modifier(self, modifier_function, *args, **kwargs):
-        modifier_function(self, *args, **kwargs)
+        if not pup.is_instant:
+            self.items[KEY_PUP].append(pup)
+            self.items[KEY_PUP] = sorted(self.items[KEY_PUP], key=lambda p: p.name)
+
+        return True
+
+    def get_powerups(self):
+        return self.items[KEY_PUP]
+    
+    async def use_powerup(self, index):
+        await self.get_powerups()[index].activate(g_env.MAP, self, [og for og_name, og in g_env.OGS.items() if og_name != self.name])
+        del self.items[KEY_PUP][index]

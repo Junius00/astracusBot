@@ -20,15 +20,23 @@ class BotState():
             del self.pending[chat_id]
 
     async def send_message(self, chat_id, msg, options=None):
+        if not chat_id:
+            return
+        
         keys = ReplyKeyboardRemove()
         if options:
             keys = ReplyKeyboardMarkup([[KeyboardButton(text)] for text in options], one_time_keyboard=True)
 
         await self.app.bot.send_message(chat_id=chat_id, text=msg, reply_markup=keys)
 
-    async def send_image(self, chat_id, img_path):
-        with open(img_path, 'rb') as f:
-            await self.app.bot.send_photo(chat_id, f)
+    async def send_image(self, chat_id, img_bytes):
+        if not chat_id:
+            return
+        
+        if type(img_bytes) != bytes:
+            raise ValueError('image must be in bytes to be displayed.')
+
+        await self.app.bot.send_photo(chat_id, img_bytes)
     
     async def default_handler(self, update, context):
         await self.send_message(get_chat_id(update), 'We don\'t know what to do with that information. Try a command?')

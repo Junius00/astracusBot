@@ -4,6 +4,7 @@ from constants.names import B_ROAD, R_LIST
 
 from objects.Building import Building
 from bot_needs.comm import BOT_COMM
+import globals.bot as g_bot
 
 async def fools_luck_day3(map, og_self, ogs_others):
     pass
@@ -18,7 +19,7 @@ async def randomizer_of_destiny(map, og_self, ogs_others):
     
     async def response(r):
         og_self.add_resource(r, dice)
-        await BOT_COMM(og_self.active_id, COMM_COUT, "{dice} cop{copy_ending} of {r} has been added.")
+        await BOT_COMM(og_self.active_id, COMM_COUT, f"{dice} cop{copy_ending} of {r} has been added.")
     
     await BOT_COMM(og_self.active_id, COMM_CIN, f"Please choose a resource type to get {dice} cop{copy_ending} of.", options=R_LIST, on_response=response)
 
@@ -32,7 +33,7 @@ async def power_of_trade(map, og_self, ogs_others):
             await BOT_COMM(chat_id, COMM_CIN, 'Please enter a valid integer.', on_response=lambda c: on_resp_count(rget, rgive, c))
             return
 
-        cur = og_self.get_resource(rgive)
+        cur = og_self.get_resource_count(rgive)
         if cur < count:
             await BOT_COMM(chat_id, COMM_COUT, f'You don\'t have enough {rgive} to give. Please try the command again. [Current amount: {cur}]')
             return
@@ -71,7 +72,7 @@ async def paving_the_way(map, og_self, ogs_others):
     b.owner = og_self.name
 
     choices = map.get_possible_choices(og_self, b)
-    map.generate_map_img(choices=choices)
+    map_img = map.generate_map_img(choices=choices)
 
     async def response(i):
         i = int(i)
@@ -79,6 +80,7 @@ async def paving_the_way(map, og_self, ogs_others):
         map.place_building(choices[i-1], b)
         await BOT_COMM(og_self.active_id, COMM_COUT, 'A road has been placed.')
 
+    await g_bot.STATE.send_image(og_self.active_id, map_img)
     await BOT_COMM(og_self.active_id, COMM_CIN, 'Please choose a road option from the map image.', options=[x + 1 for x in range(len(choices))], on_response=response)
 
 async def road_block(map, og_self, ogs_others):
@@ -113,7 +115,7 @@ async def sneaky_thief(map, og_self, ogs_others):
 
 async def just_say_no(map, og_self, ogs_others):
     og_self.just_say_no_count += 1
-    await BOT_COMM(og_self.active_id, COMM_COUT, f'You now have {og_self.just_say_no_count} cards.')
+    await BOT_COMM(og_self.active_id, COMM_COUT, f'You now have {og_self.just_say_no_count} Just Say No card(s).')
 
 async def fate_of_hell(map, og_self, ogs_others):
     pass

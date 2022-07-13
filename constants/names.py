@@ -8,8 +8,10 @@ OGS_LIST = [OG_AVARI, OG_KELGRAS, OG_LEVIATHAN, OG_THERON]
 KEY_R = 'resource'
 KEY_B = 'building'
 KEY_P = 'point'
+KEY_PUP = 'powerup'
 
 KEY_PUP_QUANTITY = 'pUpQuantity'
+KEY_PUP_DESC = 'pUpDesc'
 KEY_PUP_ACTION = 'pUpAction'
 KEY_PUP_IS_INSTANT = 'pUpIsInstant'
 
