@@ -1,6 +1,6 @@
 import asyncio
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
-from bot_needs.comm import BOT_COMM, get_chat_id
+from bot_needs.comm import BOT_COMM, get_chat_id, get_command
 from bot_needs.commands.admin import COMMAND_HANDLERS_ADMIN
 from bot_needs.commands.common import COMMAND_HANDLERS_COMMON
 from bot_needs.commands.og import COMMAND_HANDLERS_OG
@@ -11,7 +11,16 @@ from constants.names import OG_AVARI, OG_KELGRAS, OG_LEVIATHAN, OG_THERON
 from globals.init import init_global, schedule_tasks
 import globals.bot as g_bot
 
-async def command_first_pass(command, update, context):
+async def command_first_pass(update, context):
+    command = get_command(update)
+    if not command:
+        #cannot extract command
+        return
+    
+    if command == 'start':
+        await COMMAND_HANDLERS_COMMON[command](update, context)
+        return
+    
     chat_id = get_chat_id(update)
     if not g_bot.STATE.game_is_running:
         await BOT_COMM(chat_id, COMM_COUT, 'Not all OGs have joined the game. Please wait for the game to start before using any commands.')
@@ -20,8 +29,8 @@ async def command_first_pass(command, update, context):
     if g_bot.STATE.check_busy(chat_id):
         await BOT_COMM(chat_id, COMM_COUT, 'Maybe finish your current command first before trying another one?')
         return
-    
-    await command(update, context)
+
+    await dict(**COMMAND_HANDLERS_ADMIN, **COMMAND_HANDLERS_COMMON, **COMMAND_HANDLERS_OG)[command](update, context)
 
 async def message_handler(update, context):
     chat_id = get_chat_id(update)
@@ -44,16 +53,12 @@ def main():
             common.append(username)
             ogs.append(username)
 
-    for cstr, command in COMMAND_HANDLERS_COMMON.items():
-        if cstr == 'start':
-            app.add_handler(CommandHandler('start', command, filters=filters.User(username=common)))
-            continue
-
-        app.add_handler(CommandHandler(cstr, command, filters=filters.User(username=common)))
-    for cstr, command in COMMAND_HANDLERS_ADMIN.items():
-        app.add_handler(CommandHandler(cstr, command, filters=filters.User(username=admins)))
-    for cstr, command in COMMAND_HANDLERS_OG.items():
-        app.add_handler(CommandHandler(cstr, command, filters=filters.User(username=ogs)))
+    for cstr in COMMAND_HANDLERS_COMMON.keys():
+        app.add_handler(CommandHandler(cstr, command_first_pass, filters=filters.User(username=common)))
+    for cstr in COMMAND_HANDLERS_ADMIN.keys():
+        app.add_handler(CommandHandler(cstr, command_first_pass, filters=filters.User(username=admins)))
+    for cstr in COMMAND_HANDLERS_OG.keys():
+        app.add_handler(CommandHandler(cstr, command_first_pass, filters=filters.User(username=ogs)))
 
     app.add_handler(MessageHandler(filters.TEXT, message_handler))
 

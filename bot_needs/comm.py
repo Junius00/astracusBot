@@ -2,6 +2,13 @@ from constants.bot.common import COMM_CIN, COMM_COUT
 import globals.bot as g_bot
 import globals.env as g_env
 
+def get_command(update):
+    text = update.message.text
+    if not text or text[0] != '/':
+        return None
+    
+    return text[1:]
+
 def get_chat_id(update):
     return update.message.chat.id
 
