@@ -26,7 +26,7 @@ from objects.Building import Building
 
 class Map():
     def __init__(self):
-        #prevents OGs from all editing the map at once; prevent rule breaking
+        # prevents OGs from all editing the map at once; prevent rule breaking
         self.map_lock = False
 
         self.filename = os.path.join(FOLDER_DATA, "map.json")
@@ -35,13 +35,13 @@ class Map():
 
     def lock(self):
         self.map_lock = True
-    
+
     def unlock(self):
         self.map_lock = False
-    
+
     def is_locked(self):
         return self.map_lock
-    
+
     def reset_map(self):
         self.map = {}
 
@@ -56,7 +56,7 @@ class Map():
                 building.c = None
 
                 return True
-        
+
         return False
 
     def get_building(self, c):
@@ -67,16 +67,23 @@ class Map():
             ret = self.map.get(p, None)
             if ret:
                 break
-        
+
         return ret
-    
+
+    def to_obj(self):
+        return {str(k): v.to_obj() for k, v in self.map.items()}
+
+    def from_obj(self, obj):
+        {literal_eval(k): Building().to_obj(v) for k, v in obj.items()}
+
     def load_from_json(self):
         if os.path.exists(self.filename):
             f = open(self.filename, 'r')
             res = json.load(f)
             f.close()
-            
-            res = {literal_eval(k): Building().to_obj(v) for k, v in res.items()}
+
+            res = {literal_eval(k): Building().to_obj(v)
+                   for k, v in res.items()}
             self.map = res
 
             return
@@ -91,14 +98,14 @@ class Map():
     def generate_map_img(self, choices=None):
         board = cv2.imread(self.map_img)
         board = cv2.copyMakeBorder(
-            board, 
-            *[BORDER_SIZE for _ in range(4)], 
+            board,
+            *[BORDER_SIZE for _ in range(4)],
             cv2.BORDER_CONSTANT, value=[255, 255, 255])
 
         for c, building in self.map.items():
             image = cv2.imread(os.path.join(
-                        FOLDER_ASSETS, MAP_ASSET_FILENAMES[building.owner][building.name]), cv2.IMREAD_UNCHANGED)
-                
+                FOLDER_ASSETS, MAP_ASSET_FILENAMES[building.owner][building.name]), cv2.IMREAD_UNCHANGED)
+
             if building.name == B_ROAD:
                 image = ndimage.rotate(image, 90 - c[3])
 
@@ -111,8 +118,10 @@ class Map():
         if choices:
             for i, c in enumerate(choices):
                 x, y = c_to_xy(c)
-                cv2.circle(board, (x, y), CHOICE_RADIUS, CHOICE_COLOR, CHOICE_THICKNESS)
-                cv2.putText(board, str(i+1), (x + CHOICE_RADIUS, y - CHOICE_RADIUS), CHOICE_FONT, CHOICE_FONTSCALE, CHOICE_COLOR, CHOICE_THICKNESS, cv2.LINE_AA)
+                cv2.circle(board, (x, y), CHOICE_RADIUS,
+                           CHOICE_COLOR, CHOICE_THICKNESS)
+                cv2.putText(board, str(i+1), (x + CHOICE_RADIUS, y - CHOICE_RADIUS),
+                            CHOICE_FONT, CHOICE_FONTSCALE, CHOICE_COLOR, CHOICE_THICKNESS, cv2.LINE_AA)
 
         h, w = board.shape[:2]
         nw = 1000
@@ -125,7 +134,7 @@ class Map():
 
         #cv2.imwrite(self.current_map_img, board)
         return cv2.imencode('.png', board)[1].tobytes()
-        
+
     def get_possible_choices(self, og, building, override_building_type=None):
         def road():
             start = og.get_starting_house()
@@ -137,7 +146,7 @@ class Map():
             for e in find_neighbours(start.c):
                 if not self.get_building(e):
                     possible.append(e)
-            
+
             for r in og.get_roads():
                 for v in find_neighbours(r.c):
                     for e in find_neighbours(v):
@@ -164,12 +173,12 @@ class Map():
                             if check_equivalent(v, p):
                                 exists = True
                                 break
-                                
+
                         if not exists:
                             possible.append(v)
 
             return possible
-        
+
         def village():
             return [b.c for b in og.get_houses()]
 

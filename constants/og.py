@@ -6,3 +6,14 @@ DOMINANT_RESOURCES = {
     OG_LEVIATHAN: R_WATER,
     OG_THERON: R_MINERAL
 }
+
+OG_NAME = "ogName"
+OG_DOMINANT_RESOURCES = "ogDom"
+OG_ACTIVE_ID = "ogActiveId"
+OG_RMULTIPLIER = "ogMult"
+OG_FORCE = "ogForce"
+OG_INSURANCE = "ogInsurance"
+OG_NO = "ogNo"
+OG_COLATERAL = "ogCol"
+OG_USED_POWERUPS = "ogUsed"
+OG_MISC = "ogMisc"

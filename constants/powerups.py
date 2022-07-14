@@ -68,7 +68,7 @@ def PUP_INFO():
             KEY_PUP_QUANTITY: 3,
             KEY_PUP_DESC: 'You can steal 25 random resources from another tribe of choice.',
             KEY_PUP_ACTION: sneaky_thief,
-            KEY_PUP_IS_INSTANT: False
+            KEY_PUP_IS_INSTANT: True
         },
         PUP_JUST_SAY_NO: {
             KEY_PUP_QUANTITY: 5,
@@ -80,7 +80,7 @@ def PUP_INFO():
             KEY_PUP_QUANTITY: 3,
             KEY_PUP_DESC: 'You can spin a roulette wheel to decide which opposing tribe to play the action against.',
             KEY_PUP_ACTION: fate_of_hell,
-            KEY_PUP_IS_INSTANT: False
+            KEY_PUP_IS_INSTANT: True
         },
         PUP_TELESCOPE: {
             KEY_PUP_QUANTITY: 2,
@@ -89,3 +89,6 @@ def PUP_INFO():
             KEY_PUP_IS_INSTANT: False
         }
     }
+
+
+P_NAME = "pName"
