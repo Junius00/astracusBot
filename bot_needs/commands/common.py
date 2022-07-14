@@ -41,6 +41,8 @@ async def view_map(update, context):
 
     if not await alerted_map_lock(chat_id):
         await BOT_MAP(chat_id)
+    
+    g_bot.STATE.mark_free(chat_id)
 
 BOTCOMMANDS_COMMON = [
     BotCommand('start', 'Take control of your OG / Sign in as an admin, depending on who you are.'),

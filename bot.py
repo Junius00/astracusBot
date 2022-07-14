@@ -28,7 +28,7 @@ async def command_first_pass(update, context):
         return
 
     if g_bot.STATE.check_busy(chat_id):
-        await BOT_COMM(chat_id, COMM_COUT, 'Maybe finish your current command first before trying another one?')
+        await BOT_COMM(chat_id, COMM_COUT, 'Maybe finish your current command first before trying another one?', is_end_of_sequence=False)
         return
 
     g_bot.STATE.mark_busy(chat_id)

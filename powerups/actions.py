@@ -88,7 +88,7 @@ async def paving_the_way(og_self):
         g_env.MAP.place_building(choices[i-1], b)
         await BOT_COMM(og_self.active_id, COMM_COUT, 'A road has been placed.')
 
-    await BOT_MAP(og_self.active_id, g_env.MAP.generate_map_img(choices))
+    await BOT_MAP(og_self.active_id, choices)
     await BOT_COMM(og_self.active_id, COMM_CIN, 'Please choose a road option from the map image.', options=[x + 1 for x in range(len(choices))], on_response=response)
 
 #used if another OG is targeted
