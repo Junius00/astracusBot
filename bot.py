@@ -17,6 +17,10 @@ async def command_first_pass(command, update, context):
         await BOT_COMM(chat_id, COMM_COUT, 'Not all OGs have joined the game. Please wait for the game to start before using any commands.')
         return
     
+    if g_bot.STATE.check_busy(chat_id):
+        await BOT_COMM(chat_id, COMM_COUT, 'Maybe finish your current command first before trying another one?')
+        return
+    
     await command(update, context)
 
 async def message_handler(update, context):
@@ -45,14 +49,11 @@ def main():
             app.add_handler(CommandHandler('start', command, filters=filters.User(username=common)))
             continue
 
-        app.add_handler(CommandHandler(
-            cstr, command, filters=filters.User(username=common)))
+        app.add_handler(CommandHandler(cstr, command, filters=filters.User(username=common)))
     for cstr, command in COMMAND_HANDLERS_ADMIN.items():
-        app.add_handler(CommandHandler(
-            cstr, command, filters=filters.User(username=admins)))
+        app.add_handler(CommandHandler(cstr, command, filters=filters.User(username=admins)))
     for cstr, command in COMMAND_HANDLERS_OG.items():
-        app.add_handler(CommandHandler(
-            cstr, command, filters=filters.User(username=ogs)))
+        app.add_handler(CommandHandler(cstr, command, filters=filters.User(username=ogs)))
 
     app.add_handler(MessageHandler(filters.TEXT, message_handler))
 
