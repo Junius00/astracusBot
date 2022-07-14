@@ -34,6 +34,8 @@ class Building():
         self.owner = obj[KEY_OWNER]
         self.c = literal_eval(obj[KEY_C])
 
+        return self
+
     def clone(self, building):
         self.from_obj(building.to_obj())
         return self

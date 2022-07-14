@@ -31,12 +31,10 @@ async def add_resource(update, context):
             return
         
         og = g_env.OGS[name]
-        
-        multi = og.r_multiplier
-        og.add_resource(r, count)
-        added = math.ceil(count * multi)
-        await BOT_COMM(id, COMM_COUT, f'{added} {r} has been added to {name} ({multi:.1f}x multiplier applied). [New total: {og.get_resource_count(r)} {r}]')
-        await BOT_COMM(og.active_id, COMM_COUT, f'You have earned {added} {r}! ({multi:.1f}x multiplier applied) [New total: {og.get_resource_count(r)} {r}]')
+        added, multi = og.add_resource(r, count)
+
+        await BOT_COMM(id, COMM_COUT, f'{added} {r} has been added to {name} ({multi:.2f}x multiplier applied). [New total: {og.get_resource_count(r)} {r}]')
+        await BOT_COMM(og.active_id, COMM_COUT, f'You have earned {added} {r}! ({multi:.2f}x multiplier applied) [New total: {og.get_resource_count(r)} {r}]')
 
     async def on_resp_resource(name, r):
         await BOT_COMM(id, COMM_CIN, 'Please enter an integer amount (greater than 0) to add.', on_response=lambda count: on_resp_number(name, r, count))
@@ -116,6 +114,11 @@ async def move_collateral_buildings(update, context):
 
     #disallow moving roads
     await BOT_COMM(id, COMM_CIN, 'Please choose a buliding type to move.', options=[btype for btype in B_LIST if btype != B_ROAD], on_response=on_resp_btype)
+
+
+async def mark_flags_stolen(update, context):
+    id = get_chat_id(update)
+
 
 async def get_scores(update, context):
     id = get_chat_id(update)

@@ -1,6 +1,6 @@
 from random import randint
 from constants.bot.common import RESP_NO, RESP_YES, COMM_CIN, COMM_COUT
-from constants.names import B_HOUSE, B_ROAD, B_VILLAGE, OGS_LIST, R_LIST
+from constants.names import B_HOUSE, B_ROAD, B_VILLAGE, OGS_LIST, PUP_FATE_OF_HELL, PUP_JUST_SAY_NO, PUP_ROAD_BLOCK, PUP_SNEAKY_THIEF, R_LIST
 
 from objects.Building import Building
 from bot_needs.comm import BOT_COMM, BOT_MAP
@@ -97,6 +97,28 @@ async def paving_the_way(map, og_self, ogs_others):
     await BOT_MAP(og_self.active_id, map.generate_map_img(choices))
     await BOT_COMM(og_self.active_id, COMM_CIN, 'Please choose a road option from the map image.', options=[x + 1 for x in range(len(choices))], on_response=response)
 
+#used if another OG is targeted
+async def check_for_just_say_no(og_self, og_target, pup_name, finish_action):
+    async def response(res):
+        if res == RESP_YES:
+            og_target.say_no()
+            await BOT_COMM(og_self.active_id, COMM_COUT,
+                           f'Oh no! The tribe has activated {PUP_JUST_SAY_NO}! Too bad, nothing happened!')
+            await BOT_COMM(og_target.active_id, COMM_COUT,
+                           'Just Say No is activated. You successfully avoided another tribe\'s action against you! Joke\'s on them!')
+        elif res == RESP_NO:
+            await finish_action()
+
+    if og_target.can_say_no():
+        await BOT_COMM(
+            og_target.active_id, COMM_COUT,
+            f"Another OG is trying to use {pup_name} on you. Will you use a '{PUP_JUST_SAY_NO}' Card? ({og_target.just_say_no_count} left)",
+            options=[RESP_YES, RESP_NO],
+            on_response=response
+        )
+        return
+
+    await finish_action()
 
 async def road_block(map, og_self, ogs_others):
     og_target = sorted(ogs_others, key=lambda og: og.calculate_points())[0]
@@ -107,43 +129,29 @@ async def road_block(map, og_self, ogs_others):
         await BOT_COMM(og_self.active_id, COMM_COUT, 'The top OG will have their next earnings halved.')
         await BOT_COMM(og_target.active_id, COMM_COUT, "Because another OG used Road Block, your OG's earnings have been halved for the next game!")
 
-    async def response(res):
-        if res == RESP_YES:
-            og_target.say_no()
-            await BOT_COMM(og_self.active_id, COMM_COUT,
-                           'Oh no! The tribe has activated Just Say No! Too bad, nothing happened!')
-            await BOT_COMM(og_target.active_id, COMM_COUT,
-                           'Just Say No is activated. You successfully avoided another tribe\'s action against you! Joke\'s on them!')
-        elif res == RESP_NO:
-            await finish_action()
-
-    if og_target.can_say_no():
-        await BOT_COMM(
-            og_target.active_id, COMM_COUT,
-            f"Another OG is trying to use Road Block on you. Will you use a 'Just Say No' Card? ({og_target.just_say_no_count} left)",
-            options=[RESP_YES, RESP_NO],
-            on_response=response
-        )
-
-    await finish_action()
+    await check_for_just_say_no(og_self, og_target, PUP_ROAD_BLOCK, finish_action)
 
 
 async def sneaky_thief(map, og_self, ogs_others):
     async def on_resp_og_choice(og):
         og_target = ogs_others[og]
-        resource = R_LIST[randint(0, 3)]
-        count = 0
-        while og_target.get_resource_count(resource) < 25 and count < 4:
+
+        async def finish_action():
             resource = R_LIST[randint(0, 3)]
-            count += 1
-        stolen = min(og_target.get_resource_count(resource), 25)
-        og_self.add_resource(resource, stolen)
-        og_target.delete_resource(resource, stolen)
-        if count > 0:
-            await BOT_COMM(og_self.active_id, COMM_COUT, f'{og_target.name} has an insufficient amount of the original resource rolled. We have stolen {stolen} {resource}s instead.')
-        else:
-            await BOT_COMM(og_self.active_id, COMM_COUT, f'You have stolen 25 {resource}s from {og_target.name}')
-        await BOT_COMM(og_target.active_id, COMM_COUT, f'Oh no! Another tribe has activated Sneaky Thief. {stolen} {resource} has been stolen from you.')
+            count = 0
+            while og_target.get_resource_count(resource) < 25 and count < 4:
+                resource = R_LIST[randint(0, 3)]
+                count += 1
+            stolen = min(og_target.get_resource_count(resource), 25)
+            og_self.add_resource(resource, stolen)
+            og_target.delete_resource(resource, stolen)
+            if count > 0:
+                await BOT_COMM(og_self.active_id, COMM_COUT, f'{og_target.name} has an insufficient amount of the original resource rolled. We have stolen {stolen} {resource} instead.')
+            else:
+                await BOT_COMM(og_self.active_id, COMM_COUT, f'You have stolen 25 {resource} from {og_target.name}.')
+            await BOT_COMM(og_target.active_id, COMM_COUT, f'Oh no! Another tribe has activated Sneaky Thief. {stolen} {resource} has been stolen from you.')
+
+        await check_for_just_say_no(og_self, og_target, PUP_SNEAKY_THIEF, finish_action)
 
     await BOT_COMM(og_self.active_id, COMM_CIN, f'You can steal 25 random resources from another tribe of choice.', options=OGS_LIST, on_response=on_resp_og_choice)
 
@@ -156,12 +164,16 @@ async def just_say_no(map, og_self, ogs_others):
 async def fate_of_hell(map, og_self, ogs_others):
     async def on_resp_resource_choice(resource):
         og_target = ogs_others[randint(0, 3)]
-        amount = randint(1, 25)
-        destroyed = min(og_target.get_resource_count(resource), amount)
-        og_target.delete_resource(resource, destroyed)
 
-        await BOT_COMM(og_self.active_id, COMM_COUT, f"Fate of Hell is activated. You have successfully destroyed {destroyed} {resource} from {og_target.name}")
-        await BOT_COMM(og_target.active_id, COMM_COUT, f"Oh no! Another tribe has activated the Fate of Hell. {destroyed} {resource} that you own has been destroyed.")
+        async def finish_action():
+            amount = randint(1, 25)
+            destroyed = min(og_target.get_resource_count(resource), amount)
+            og_target.delete_resource(resource, destroyed)
+
+            await BOT_COMM(og_self.active_id, COMM_COUT, f"Fate of Hell is activated. You have successfully destroyed {destroyed} {resource} from {og_target.name}")
+            await BOT_COMM(og_target.active_id, COMM_COUT, f"Oh no! Another tribe has activated the Fate of Hell. {destroyed} {resource} that you own has been destroyed.")
+
+        await check_for_just_say_no(og_self, og_target, PUP_FATE_OF_HELL, finish_action)
 
     await BOT_COMM(og_self.active_id, COMM_CIN, f'You can choose a resource to destroy from a random tribe. The number will be randomised as well.', options=OGS_LIST, on_response=on_resp_resource_choice)
 
@@ -170,7 +182,7 @@ async def telescope(map, og_self, ogs_others):
     og_target = sorted(ogs_others, key=lambda og: og.calculate_points())[0]
     resources = og_target.get_resource()
     scores = og_target.calculate_points()
-    text = f"Telescope is activated.\n{og_target.name} is leading with {scores} point(s).\nTheir current resources:"
+    text = f"Telescope is activated.\n{og_target.name} is leading with {scores} point(s).\nTheir current resources:\n"
     for resource, value in resources.items():
         text += f"{resource}- {value}\n"
     await BOT_COMM(og_self.active_id, COMM_COUT, text)

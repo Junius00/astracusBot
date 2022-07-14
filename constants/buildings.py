@@ -13,7 +13,7 @@ B_POINTS = {
 
 #(own, [others])
 B_RATIOS = {
-    B_ROAD: (30, [10]),
-    B_HOUSE: (40, [10, 10]),
-    B_VILLAGE: (50, [20, 20, 10])
+    B_ROAD: (20, [10]),
+    B_HOUSE: (30, [10, 5]),
+    B_VILLAGE: (40, [20, 10, 10])
 }

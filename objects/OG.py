@@ -5,7 +5,7 @@ from ast import literal_eval
 from bot_needs.comm import BOT_COMM
 from constants.bot.common import COMM_COUT
 from constants.names import B_HOUSE, B_ROAD, B_VILLAGE, KEY_B, KEY_P, KEY_PUP, KEY_R, R_MINERAL, R_WATER, R_WHEAT, R_WOOD
-from constants.og import DOMINANT_RESOURCES, OG_ACTIVE_ID, OG_COLATERAL, OG_DOMINANT_RESOURCES, OG_FORCE, OG_INSURANCE, OG_MISC, OG_NAME, OG_NO, OG_RMULTIPLIER, OG_USED_POWERUPS
+from constants.og import DOMINANT_RESOURCES, OG_ACTIVE_ID, OG_COLLATERAL, OG_DOMINANT_RESOURCES, OG_FORCE, OG_INSURANCE, OG_MISC, OG_NAME, OG_NO, OG_RMULTIPLIER, OG_USED_POWERUPS
 from constants.storage import FOLDER_DATA
 from constants.templates import GET_B_TEMPLATE, GET_P_TEMPLATE, GET_R_TEMPLATE
 from objects.Building import Building
@@ -39,6 +39,9 @@ class OG():
         # Count powerups used
         self.used_powerups = 0
 
+        # Count flags lost (for the day)
+        self.flags_lost = 0
+
         # misc points (points excluding number of houses)
         self.misc_points = 0
 
@@ -54,7 +57,6 @@ class OG():
         self.items = {
             KEY_B: GET_B_TEMPLATE(),
             KEY_R: GET_R_TEMPLATE(),
-            KEY_P: GET_P_TEMPLATE(),
             KEY_PUP: []
         }
 
@@ -91,7 +93,7 @@ class OG():
             OG_FORCE: self.force_resource,
             OG_INSURANCE: self.has_insurance,
             OG_NO: str(self.just_say_no_count),
-            OG_COLATERAL: self.collateral_buildings,
+            OG_COLLATERAL: [b.to_obj() for b in self.collateral_buildings],
             OG_USED_POWERUPS: str(self.used_powerups),
             OG_MISC: str(self.misc_points)
         }
@@ -104,7 +106,7 @@ class OG():
         self.force_resource=obj[OG_FORCE]
         self.has_insurance=obj[OG_INSURANCE]
         self.just_say_no_count=literal_eval(obj[OG_NO])
-        self.collateral_buildings=obj[OG_COLATERAL]
+        self.collateral_buildings=[Building().from_obj(b_obj) for b_obj in obj[OG_COLLATERAL]]
         self.used_powerups=literal_eval(obj[OG_USED_POWERUPS])
         self.misc_points=literal_eval(obj[OG_MISC])
 
@@ -144,10 +146,15 @@ class OG():
             self.force_resource=None
 
         if self.r_multiplier != 1:
-            amount=math.ceil(amount * self.r_multiplier)
-            self.r_multiplier=1
+            new_amount = math.ceil(amount * self.r_multiplier)
+            self.r_multiplier = 1
 
-        self.items[KEY_R][r_key] += amount
+        if self.flags_lost > 0:
+            new_amount = math.ceil(new_amount * (1 - 0.1 * self.flags_lost))
+
+        self.items[KEY_R][r_key] += new_amount
+
+        return new_amount, new_amount / amount
 
     def delete_resource(self, r_key, amount):
         cur=self.items[KEY_R][r_key]
@@ -199,7 +206,18 @@ class OG():
         return False
 
     def calculate_points(self):
-        return len(self.items[KEY_B][B_HOUSE]) + 3 * len(self.items[KEY_B][B_HOUSE])
+        b_points = len(self.items[KEY_B][B_HOUSE]) + 3 * len(self.items[KEY_B][B_VILLAGE])
+        is_most_used_powerups = True
+
+        for og_name, og in g_env.OGS.items():
+            if og_name == self.name:
+                continue
+
+            if og.used_powerups > self.used_powerups:
+                is_most_used_powerups = False
+
+        pup_points = 6 if is_most_used_powerups else 0 
+        return b_points + pup_points + self.misc_points
 
     def can_say_no(self):
         return self.just_say_no_count > 0
@@ -255,3 +273,6 @@ class OG():
 
     def pretty_print_collateral_buildings(self):
         return ', '.join(f'{name}: {count}' for name, count in self.count_collateral_buildings().items())
+
+    def add_flag_lost(self):
+        self.flags_lost = min(self.flags_lost + 1, 3)

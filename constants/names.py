@@ -37,3 +37,18 @@ C_YELLOW = 'yellow'
 T_BANNER = 'banner'
 T_DOOR = 'door'
 T_FLAG = 'flag'
+
+# Booster Cards
+PUP_FOOLS_LUCK = "Fool's Luck"
+PUP_DICE_OF_DESTINY = "Dice of Destiny"
+PUP_POWER_OF_TRADE = "Power of Trade"
+PUP_BARTER_TRADE = "Barter Trade"
+PUP_INSURANCE = "Insurance"
+PUP_PAVING_THE_WAY = "Paving the Way"
+
+# Action Cards
+PUP_ROAD_BLOCK = "Road Block"
+PUP_SNEAKY_THIEF = "Sneaky Thief"
+PUP_JUST_SAY_NO = "Just Say No"
+PUP_FATE_OF_HELL = "Fate of Hell"
+PUP_TELESCOPE = "Telescope"

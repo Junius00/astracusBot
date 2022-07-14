@@ -7,6 +7,7 @@ user functions:
 - buy a powerup card
 - view powerup cards
 - use powerup cards
+- view collateral buildings
 - place collateral buildings (requires roads to place)
 """
 
@@ -136,6 +137,7 @@ async def buy_powerup_card(update, context):
             if pup.is_instant:
                 await BOT_COMM(chat_id, COMM_COUT, f'{pup.name} is instantly activated.')
                 await pup.activate(g_env.MAP, og, [og_name for og_name in g_env.OGS.keys() if og_name != og.name])
+                og.used_powerups += 1
             
             return
         

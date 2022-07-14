@@ -45,8 +45,9 @@ def main():
 
     app.add_handler(MessageHandler(filters.TEXT, message_handler))
 
+    print('Initialsing global variables...')
     init_global(app)
-
+    print('Starting bot polling...')
     app.run_polling()
 
 
