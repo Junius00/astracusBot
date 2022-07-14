@@ -17,9 +17,24 @@ async def start_handler(update, context):
 
     if role != ROLE_ADMIN:
         await g_env.OGS[role].set_active_id(chat_id)
+    else:
+        g_bot.STATE.add_admin_id(chat_id)
     
     await g_bot.STATE.app.bot.set_my_commands(BOTCOMMANDS_COMMON + add_bot_commands, scope=scope)
-    await g_bot.STATE.send_message(chat_id, f'Welcome to AstracusBot. You are logged in as {role}. Please select a command to continue.')
+    await g_bot.STATE.send_message(chat_id, f'Welcome to AstracusBot. You are logged in as {role}.')
+
+    not_joined = []
+
+    for og in g_env.OGS.values():
+        if not og.active_id:
+            not_joined.append(og.name)
+
+    should_start = len(not_joined) == 0
+
+    if should_start:
+        await g_bot.STATE.start_game()
+    else:
+        await g_bot.STATE.send_message(chat_id, f'Please wait for all OGs to join.\nNot joined: {", ".join(not_joined)}')
     
 async def view_map(update, context):
     chat_id = get_chat_id(update)

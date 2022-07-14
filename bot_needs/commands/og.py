@@ -78,7 +78,7 @@ async def buy_building(update, context):
         g_env.MAP.unlock()
 
     async def on_resp_resource_set(type, set):
-        BOT_MAP(chat_id, choices)
+        await BOT_MAP(chat_id, choices)
         await BOT_COMM(chat_id, COMM_CIN, f"Where do you want to build a {type}?", options=list(range(1, len(choices) + 1)), on_response=lambda loc: on_resp_building_loc(type, set, loc))
 
     async def on_resp_building_type(type):
@@ -136,7 +136,7 @@ async def buy_powerup_card(update, context):
 
             if pup.is_instant:
                 await BOT_COMM(chat_id, COMM_COUT, f'{pup.name} is instantly activated.')
-                await pup.activate(g_env.MAP, og, [og_name for og_name in g_env.OGS.keys() if og_name != og.name])
+                await pup.activate(og)
                 og.used_powerups += 1
             
             return

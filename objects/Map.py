@@ -1,4 +1,5 @@
 from ast import literal_eval
+from datetime import datetime as dt, timedelta
 import json
 import os
 import cv2
@@ -13,6 +14,7 @@ from constants.map.positions import BORDER_SIZE
 from constants.names import B_HOUSE, B_ROAD, B_VILLAGE, KEY_B
 from constants.storage import FOLDER_DATA, FOLDER_ASSETS
 from objects.Building import Building
+from scheduling import schedule_dt
 
 """
 1. Reset map function
@@ -33,8 +35,11 @@ class Map():
         self.map_img = os.path.join(FOLDER_ASSETS, "board.png")
         self.load_from_json()
 
-    def lock(self):
+    def lock(self, timeout_s=120):
         self.map_lock = True
+
+        if timeout_s > 0:
+            schedule_dt(dt.now() + timedelta(seconds=timeout_s), self.unlock)
 
     def unlock(self):
         self.map_lock = False

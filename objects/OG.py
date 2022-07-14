@@ -33,6 +33,9 @@ class OG():
         # Just Say No: negate the next targeted action
         self.just_say_no_count = 0
 
+        # Collateral: Fool's Luck Day 3 multiplier
+        self.has_collateral_multiplier = False
+
         # Collateral: store collateral buildings won from other OGs
         self.collateral_buildings = []
 
@@ -48,7 +51,7 @@ class OG():
         self.load_from_json()
 
     async def set_active_id(self, new_id):
-        if self.active_id:
+        if self.active_id and self.active_id != new_id:
             await BOT_COMM(self.active_id, COMM_COUT, 'You have been deregistered. Please check within your OG to see who took control, or use /start to take control back.')
 
         self.active_id = new_id
@@ -141,15 +144,13 @@ class OG():
         return self.get_resources()[r_key]
 
     def add_resource(self, r_key, amount):
-        if self.force_resource:
-            r_key=self.force_resource
-            self.force_resource=None
+        new_amount = amount
 
         if self.r_multiplier != 1:
             new_amount = math.ceil(amount * self.r_multiplier)
             self.r_multiplier = 1
 
-        if self.flags_lost > 0:
+        if self.flags_lost > 0 and not self.has_insurance:
             new_amount = math.ceil(new_amount * (1 - 0.1 * self.flags_lost))
 
         self.items[KEY_R][r_key] += new_amount
@@ -248,9 +249,16 @@ class OG():
     def get_powerups(self):
         return self.items[KEY_PUP]
 
+    def has_powerup(self, pup_name):
+        for pup in self.get_powerups():
+            if pup.name == pup_name:
+                return True
+
+        return False
+    
     async def use_powerup(self, index):
         self.used_powerups += 1
-        await self.get_powerups()[index].activate(g_env.MAP, self, [og for og_name, og in g_env.OGS.items() if og_name != self.name])
+        await self.get_powerups()[index].activate(self)
         del self.items[KEY_PUP][index]
 
     def add_collateral_building(self, building):

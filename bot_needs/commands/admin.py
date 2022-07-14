@@ -16,7 +16,7 @@ import math
 from telegram import BotCommand
 from bot_needs.comm import BOT_COMM, get_chat_id
 from constants.bot.common import COMM_CIN, COMM_COUT
-from constants.names import B_LIST, B_ROAD, OGS_LIST, R_LIST
+from constants.names import B_HOUSE, B_LIST, B_ROAD, B_VILLAGE, OGS_LIST, PUP_FOOLS_LUCK, R_LIST
 import globals.env as g_env
 from objects.Building import Building
 
@@ -34,7 +34,7 @@ async def add_resource(update, context):
         added, multi = og.add_resource(r, count)
 
         await BOT_COMM(id, COMM_COUT, f'{added} {r} has been added to {name} ({multi:.2f}x multiplier applied). [New total: {og.get_resource_count(r)} {r}]')
-        await BOT_COMM(og.active_id, COMM_COUT, f'You have earned {added} {r}! ({multi:.2f}x multiplier applied) [New total: {og.get_resource_count(r)} {r}]')
+        await BOT_COMM(og.active_id, COMM_COUT, f'You have earned {added} {r}! ({multi:.2f}x multiplier applied) [New total: {og.get_resource_count(r)} {r}]', is_end_of_sequence=False)
 
     async def on_resp_resource(name, r):
         await BOT_COMM(id, COMM_CIN, 'Please enter an integer amount (greater than 0) to add.', on_response=lambda count: on_resp_number(name, r, count))
@@ -63,7 +63,7 @@ async def delete_resource(update, context):
         og = g_env.OGS[name]
         og.delete_resource(r, count)
         await BOT_COMM(id, COMM_COUT, f'{count} {r} has been removed from {name}. [New total: {og.get_resource_count(r)} {r}]')
-        await BOT_COMM(og.active_id, COMM_COUT, f'{count} {r} has been removed from you! [New total: {og.get_resource_count(r)} {r}]')
+        await BOT_COMM(og.active_id, COMM_COUT, f'{count} {r} has been removed from you! [New total: {og.get_resource_count(r)} {r}]', is_end_of_sequence=False)
 
     async def on_resp_resource(name, r):
         await BOT_COMM(id, COMM_CIN, 'Please enter an integer amount (greater than 0) to remove.', on_response=lambda count: on_resp_number(name, r, count))
@@ -77,9 +77,17 @@ async def move_collateral_buildings(update, context):
     id = get_chat_id(update)
 
     async def on_resp_move_count(btype, og_name_from, og_name_to, move_count):
+        og_from = g_env.OGS[og_name_from]
+        og_to = g_env.OGS[og_name_to]
+
+        #remove collateral multiplier
+        if og_from.has_collateral_multiplier:
+            og_from.has_collateral_multiplier = False
+            await BOT_COMM(og_from.active_id, COMM_COUT, f'You lost the mass game you activated {PUP_FOOLS_LUCK} for. Better luck next time!', is_end_of_sequence=False)
+        
         move_count = int(move_count)
         cur = move_count
-        avail = g_env.OGS[og_name_from].get_btype(btype)
+        avail = og_from.get_btype(btype)
 
         while cur > 0:
             b = Building().clone(avail[-1])
@@ -87,15 +95,34 @@ async def move_collateral_buildings(update, context):
             #deregister from map; coordinates removed
             g_env.MAP.remove_building(b)
             #deregister from OG
-            if g_env.OGS[og_name_from].delete_building(b):
+            if og_from.delete_building(b):
                 #add to winner OG collateral
-                g_env.OGS[og_name_to].add_collateral_building(b)
+                og_to.add_collateral_building(b)
 
             cur -= 1
 
+        await BOT_COMM(id, COMM_COUT, f'{move_count} {btype}(s) moved from {og_name_from} to {og_name_to}.')  
+        await BOT_COMM(og_from.active_id, COMM_COUT, f'You lost {move_count} {btype}(s) as collateral to {og_name_to}.', is_end_of_sequence=False)
+        await BOT_COMM(og_to.active_id, COMM_COUT, f'You gained {move_count} {btype}(s) as collateral from {og_name_from}!', is_end_of_sequence=False)
+        
+        if og_name_to.has_collateral_multiplier:
+            add_btype = btype
+            add_count = 0
 
-        await BOT_COMM(id, COMM_COUT, f'{move_count} {btype}(s) moved from {og_name_from} to {og_name_to}.')            
+            if move_count % 2 == 0:
+                add_count = move_count/2
+            else:
+                add_btype = { B_HOUSE: B_ROAD, B_VILLAGE: B_HOUSE }[btype]
+                add_count = move_count
 
+            for i in range(add_count):
+                b = Building()
+                b.set_name(add_btype)
+
+                og_to.add_collateral_building(b)
+                
+            await BOT_COMM(og_to.active_id, COMM_COUT, f'Fool\'s Luck has given you extra {add_count} {add_btype}(s)!', is_end_of_sequence=False)
+        
     async def on_resp_og_to(btype, og_name_from, og_name_to):
         avail = g_env.OGS[og_name_from].get_btype(btype)
         if not avail:
