@@ -158,7 +158,7 @@ async def sneaky_thief(og_self):
 
         await check_for_just_say_no(og_self, og_target, PUP_SNEAKY_THIEF, finish_action)
 
-    await BOT_COMM(og_self.active_id, COMM_CIN, f'You can steal 25 random resources from another tribe of choice.', options=OGS_LIST, on_response=on_resp_og_choice)
+    await BOT_COMM(og_self.active_id, COMM_CIN, f'You can steal 25 random resources from another tribe of choice.', options=[OG for OG in OGS_LIST if OG!= og_self.name], on_response=on_resp_og_choice)
 
 
 async def just_say_no(og_self):

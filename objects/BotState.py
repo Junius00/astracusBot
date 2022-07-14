@@ -1,4 +1,5 @@
 import asyncio
+from calendar import c
 from telegram import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from async_functions.running import synchronous_run
 
@@ -82,11 +83,11 @@ class BotState():
 
     async def alert_all_admins(self, msg):
         for id in self.admin_ids:
-            await self.send_message(id, msg)
+            await self.send_message(id, msg, clear_pending=False)
 
     async def alert_all_ogs(self, msg):
         for og in g_env.OGS.values():
-            await self.send_message(og.active_id, msg)
+            await self.send_message(og.active_id, msg, clear_pending=False)
 
     async def send_message(self, chat_id, msg, clear_pending=True, options=None):
         if not chat_id:
