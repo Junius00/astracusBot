@@ -5,8 +5,9 @@ ROLE_ADMIN = 'Admin'
 #OGs 1-4 use OG_AVARI, OG_KELGRAS, ...
 
 WHITELIST = {
-    'juniuspun': OG_AVARI,
+    'juniuspun': ROLE_ADMIN,
     'chknuggets': OG_AVARI,
     'GravityGhost': OG_KELGRAS,
-    'cathsornnbot': OG_LEVIATHAN
+    'cathsornnbot': OG_LEVIATHAN,
+    'Soyabeaniess': OG_KELGRAS
 }

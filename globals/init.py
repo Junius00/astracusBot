@@ -29,14 +29,6 @@ def init_global(app):
         g_env.OGS[og] = OG(og)
 
     g_env.MAP = Map()
-    starts = [START_AVARI, START_KELGRAS, START_LEVIATHAN, START_THERON]
-
-    for og, c in zip(g_env.OGS.values(), starts):
-        b = Building()
-        b.set_name(B_HOUSE)
-
-        og.set_starting_house(b)
-        g_env.MAP.place_building(c, b)
 
     g_env.PUP_TRACKER = PUP_INFO()
     

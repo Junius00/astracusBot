@@ -169,6 +169,9 @@ class Map():
         def house():
             possible = []
 
+            if not og.get_starting_house():
+                possible.append(og.start_c)
+
             for r in og.get_roads():
                 for v in find_neighbours(r.c):
                     if can_build_house(self, v):

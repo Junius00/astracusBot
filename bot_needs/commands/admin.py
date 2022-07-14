@@ -14,7 +14,7 @@ admin functions:
 
 import math
 from telegram import BotCommand
-from bot_needs.comm import BOT_COMM, get_chat_id
+from bot_needs.comm import BOT_COMM, BOT_MAP, get_chat_id
 from constants.bot.common import COMM_CIN, COMM_COUT
 from constants.names import B_HOUSE, B_LIST, B_ROAD, B_VILLAGE, OGS_LIST, PUP_FOOLS_LUCK, R_LIST
 import globals.env as g_env
@@ -87,25 +87,28 @@ async def move_collateral_buildings(update, context):
         
         move_count = int(move_count)
         cur = move_count
-        avail = og_from.get_btype(btype)
+        avail = og_from.get_building_type(btype)
 
         while cur > 0:
             b = Building().clone(avail[-1])
 
-            #deregister from map; coordinates removed
-            g_env.MAP.remove_building(b)
             #deregister from OG
             if og_from.delete_building(b):
+                #deregister from map; coordinates removed
+                g_env.MAP.remove_building(b)
                 #add to winner OG collateral
                 og_to.add_collateral_building(b)
 
             cur -= 1
 
         await BOT_COMM(id, COMM_COUT, f'{move_count} {btype}(s) moved from {og_name_from} to {og_name_to}.')  
+        
+        await BOT_MAP(og_from.active_id)
         await BOT_COMM(og_from.active_id, COMM_COUT, f'You lost {move_count} {btype}(s) as collateral to {og_name_to}.', is_end_of_sequence=False)
+        
         await BOT_COMM(og_to.active_id, COMM_COUT, f'You gained {move_count} {btype}(s) as collateral from {og_name_from}!', is_end_of_sequence=False)
         
-        if og_name_to.has_collateral_multiplier:
+        if og_to.has_collateral_multiplier:
             add_btype = btype
             add_count = 0
 
@@ -122,9 +125,11 @@ async def move_collateral_buildings(update, context):
                 og_to.add_collateral_building(b)
                 
             await BOT_COMM(og_to.active_id, COMM_COUT, f'Fool\'s Luck has given you extra {add_count} {add_btype}(s)!', is_end_of_sequence=False)
-        
+
+        await BOT_COMM(og_to.active_id, COMM_COUT, 'Use /placecollateralbuildings to place them now! (Make sure you have enough Roads to do so)')
+
     async def on_resp_og_to(btype, og_name_from, og_name_to):
-        avail = g_env.OGS[og_name_from].get_btype(btype)
+        avail = g_env.OGS[og_name_from].get_building_type(btype)
         if not avail:
             await BOT_COMM(id, COMM_COUT, f'{og_name_from} does not have {btype}s to give up.')
             return

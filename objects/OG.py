@@ -5,19 +5,20 @@ from ast import literal_eval
 from bot_needs.comm import BOT_COMM
 from constants.bot.common import COMM_COUT
 from constants.names import B_HOUSE, B_ROAD, B_VILLAGE, KEY_B, KEY_P, KEY_PUP, KEY_R, R_MINERAL, R_WATER, R_WHEAT, R_WOOD
-from constants.og import DOMINANT_RESOURCES, OG_ACTIVE_ID, OG_COLLATERAL, OG_DOMINANT_RESOURCES, OG_FORCE, OG_INSURANCE, OG_MISC, OG_NAME, OG_NO, OG_RMULTIPLIER, OG_USED_POWERUPS
+from constants.og import DOMINANT_RESOURCES, OG_ACTIVE_ID, OG_COLLATERAL, OG_DOMINANT_RESOURCES, OG_FORCE, OG_INSURANCE, OG_MISC, OG_NAME, OG_NO, OG_RMULTIPLIER, OG_USED_POWERUPS, START_C
 from constants.storage import FOLDER_DATA
 from constants.templates import GET_B_TEMPLATE, GET_P_TEMPLATE, GET_R_TEMPLATE
 from objects.Building import Building
 import globals.env as g_env
-
+import globals.bot as g_bot
 
 class OG():
     def __init__(self, name):
         self.name = name
         self.filename = os.path.join(FOLDER_DATA, f'{name}.json')
         self.dominant_r = DOMINANT_RESOURCES[name]
-
+        self.start_c = START_C[name]
+    
         # track which telegram chat is linked to current OG
         self.active_id = None
 
@@ -52,6 +53,10 @@ class OG():
 
     async def set_active_id(self, new_id):
         if self.active_id and self.active_id != new_id:
+            if g_bot.check_busy(self.active_id):
+                await BOT_COMM(new_id, COMM_COUT, 'The current OG chat is in the middle of an action. Complete it first, then try and take control again using /start.')
+                return
+
             await BOT_COMM(self.active_id, COMM_COUT, 'You have been deregistered. Please check within your OG to see who took control, or use /start to take control back.')
 
         self.active_id = new_id
@@ -139,6 +144,13 @@ class OG():
 
     def get_resources(self):
         return self.items[KEY_R]
+
+    def pretty_print_resources(self):
+        text = ""
+        for resource, value in self.get_resources().items():
+            text += f'{resource}: {value}\n'
+        
+        return text
 
     def get_resource_count(self, r_key):
         return self.get_resources()[r_key]

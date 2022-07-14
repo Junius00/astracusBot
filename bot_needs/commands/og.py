@@ -37,11 +37,9 @@ async def overview(update, context):
         await alert_unregistered(chat_id)
         return
     
-    resources = og.get_resources()
-    scores = og.calculate_points()
     text = "Your OG's resources:\n"
-    for resource, value in resources.items():
-        text += f'{resource}: {value} '
+    text += og.pretty_print_resources()
+    scores = og.calculate_points()
     text += f'\nYour points: {scores}'
 
     await BOT_COMM(chat_id, COMM_COUT, text)
@@ -98,7 +96,7 @@ async def buy_building(update, context):
         else:
             price_list = b.get_price_list()
             r_options = [", ".join([f'{p} {r}' for p, r in zip(price_list, r_set)]) for r_set in r_sets]
-            await BOT_COMM(chat_id, COMM_CIN, "Select resource set:", options=r_options, on_response=lambda set: on_resp_resource_set(type, r_sets[r_options.index(set)]))
+            await BOT_COMM(chat_id, COMM_CIN, f"Select resource set:\n\nCurrent Resources:\n{og.pretty_print_resources()}", options=r_options, on_response=lambda set: on_resp_resource_set(type, r_sets[r_options.index(set)]))
 
     g_env.MAP.lock()
     await BOT_COMM(chat_id, COMM_CIN, "Please enter building type.", options=B_LIST, on_response=on_resp_building_type)
@@ -144,7 +142,7 @@ async def buy_powerup_card(update, context):
         await BOT_COMM(chat_id, COMM_COUT, 'Purchase has failed. Please try again later.')
     
     r_options = [", ".join([f'{p} {r}' for p, r in zip(pup.get_price_list(), r_set)]) for r_set in r_sets]
-    await BOT_COMM(chat_id, COMM_CIN, 'Select resource set:', options=r_options, on_response=lambda set: on_resp_r_set(r_sets[r_options.index(set)]))
+    await BOT_COMM(chat_id, COMM_CIN, f"Select resource set:\n\nCurrent Resources:\n{og.pretty_print_resources()}", options=r_options, on_response=lambda set: on_resp_r_set(r_sets[r_options.index(set)]))
 
 async def view_powerup_cards(update, context):
     chat_id = get_chat_id(update)
