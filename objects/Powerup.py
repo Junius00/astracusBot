@@ -34,5 +34,5 @@ class Powerup():
     def try_build(self, og):
         return get_r_paths(self.ratio, og)
 
-    async def activate(self, og_self):
-        await self.action(og_self)
+    async def activate(self, og_self, on_completion):
+        await self.action(og_self, on_completion)

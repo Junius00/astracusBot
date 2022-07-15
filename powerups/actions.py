@@ -8,16 +8,17 @@ from objects.Building import Building
 from bot_needs.comm import BOT_COMM, BOT_MAP
 
 
-async def fools_luck_day3(og_self):
+async def fools_luck_day3(og_self, on_completion):
     og_self.has_collateral_multiplier = True
     await BOT_COMM(og_self.active_id, COMM_COUT, "You will gain 50% more structures from the amount of collateral the losing tribe has put down, if you win the next mass game.")
 
-async def fools_luck(og_self):
+
+async def fools_luck(og_self, on_completion):
     og_self.r_multiplier = 1.5
     await BOT_COMM(og_self.active_id, COMM_COUT, "Your next station game will yield 50% more resources.")
 
 
-async def randomizer_of_destiny(og_self):
+async def randomizer_of_destiny(og_self, on_completion):
     dice = randint(0, 50)
     copy_ending = 'ies' if dice != 1 else 'y'
 
@@ -26,9 +27,10 @@ async def randomizer_of_destiny(og_self):
         await BOT_COMM(og_self.active_id, COMM_COUT, f"{dice} cop{copy_ending} of {r} has been added.")
 
     await BOT_COMM(og_self.active_id, COMM_CIN, f"Please choose a resource type to get {dice} cop{copy_ending} of.", options=R_LIST, on_response=response)
+    on_completion()
 
 
-async def power_of_trade(og_self):
+async def power_of_trade(og_self, on_completion):
     chat_id = og_self.active_id
 
     async def on_resp_count(rget, rgive, count):
@@ -58,9 +60,10 @@ async def power_of_trade(og_self):
     async def on_resp_rget(rget):
         await BOT_COMM(chat_id, COMM_CIN, f'Please choose a resource to give in return for {rget}.', options=[r for r in R_LIST if r != rget], on_response=lambda rgive: on_resp_rgive(rget, rgive))
     await BOT_COMM(chat_id, COMM_CIN, 'Please choose a resource to receive.', options=R_LIST, on_response=on_resp_rget)
+    on_completion()
 
 
-async def barter_trade(og_self):
+async def barter_trade(og_self, on_completion):
     chat_id = og_self.active_id
 
     async def response(r):
@@ -68,14 +71,16 @@ async def barter_trade(og_self):
         await BOT_COMM(chat_id, COMM_COUT, f'Done! Your next resource gained will be {r}.')
 
     await BOT_COMM(chat_id, COMM_CIN, 'Please choose a resource to gain as your next station game reward.', options=R_LIST, on_response=response)
+    on_completion()
 
 
-async def insurance(og_self):
+async def insurance(og_self, on_completion):
     og_self.has_insurance = True
     await BOT_COMM(og_self.active_id, COMM_COUT, 'Insurance has been activated! You will no longer lose points from having your flag stolen.')
+    on_completion()
 
 
-async def paving_the_way(og_self):
+async def paving_the_way(og_self, on_completion):
     b = Building()
     b.set_name(B_ROAD)
     b.owner = og_self.name
@@ -90,8 +95,10 @@ async def paving_the_way(og_self):
 
     await BOT_MAP(og_self.active_id, choices)
     await BOT_COMM(og_self.active_id, COMM_CIN, 'Please choose a road option from the map image.', options=[x + 1 for x in range(len(choices))], on_response=response)
+    on_completion()
+# used if another OG is targeted
 
-#used if another OG is targeted
+
 async def check_for_just_say_no(og_self, og_target, pup_name, finish_action):
     async def response(res):
         if res == RESP_YES:
@@ -102,7 +109,7 @@ async def check_for_just_say_no(og_self, og_target, pup_name, finish_action):
                            f'{PUP_JUST_SAY_NO} is activated. You successfully avoided another tribe\'s action against you! Joke\'s on them!')
         elif res == RESP_NO:
             await BOT_COMM(og_target.active_id, COMM_COUT, f'You have chosen not to use a {PUP_JUST_SAY_NO} card. {pup_name} will be used against you.')
-            
+
             async def continued_action():
                 await BOT_COMM(og_self.active_id, COMM_COUT, f'{og_target.name} has decided to not negate your {pup_name} card.', is_end_of_sequence=False)
                 await finish_action()
@@ -111,7 +118,7 @@ async def check_for_just_say_no(og_self, og_target, pup_name, finish_action):
 
     if og_target.can_say_no():
         await BOT_COMM(og_self.active_id, COMM_COUT, f'Waiting for {og_target.name} to decide if they want to use {PUP_JUST_SAY_NO}. Please do something else in the meantime.')
-        
+
         async def queue_action():
             await BOT_COMM(
                 og_target.active_id, COMM_CIN,
@@ -125,8 +132,10 @@ async def check_for_just_say_no(og_self, og_target, pup_name, finish_action):
 
     await finish_action()
 
-async def road_block(og_self):
-    og_target = sorted([og for og_name, og in g_env.OGS.items() if og_name != og_self.name], key=lambda og: og.calculate_points())[0]
+
+async def road_block(og_self, on_completion):
+    og_target = sorted([og for og_name, og in g_env.OGS.items(
+    ) if og_name != og_self.name], key=lambda og: og.calculate_points())[0]
 
     async def finish_action():
         og_target.r_multiplier = 0.5
@@ -135,9 +144,10 @@ async def road_block(og_self):
         await BOT_COMM(og_target.active_id, COMM_COUT, "Because another OG used Road Block, your OG's earnings have been halved for the next game!", is_end_of_sequence=False)
 
     await check_for_just_say_no(og_self, og_target, PUP_ROAD_BLOCK, finish_action)
+    on_completion()
 
 
-async def sneaky_thief(og_self):
+async def sneaky_thief(og_self, on_completion):
     async def on_resp_og_choice(og_name):
         og_target = g_env.OGS[og_name]
 
@@ -158,17 +168,20 @@ async def sneaky_thief(og_self):
 
         await check_for_just_say_no(og_self, og_target, PUP_SNEAKY_THIEF, finish_action)
 
-    await BOT_COMM(og_self.active_id, COMM_CIN, f'You can steal 25 random resources from another tribe of choice.', options=[OG for OG in OGS_LIST if OG!= og_self.name], on_response=on_resp_og_choice)
+    await BOT_COMM(og_self.active_id, COMM_CIN, f'You can steal 25 random resources from another tribe of choice.', options=[OG for OG in OGS_LIST if OG != og_self.name], on_response=on_resp_og_choice)
+    on_completion()
 
 
-async def just_say_no(og_self):
+async def just_say_no(og_self, on_completion):
     og_self.just_say_no_count += 1
     await BOT_COMM(og_self.active_id, COMM_COUT, f'You now have {og_self.just_say_no_count} Just Say No card(s).')
+    on_completion()
 
 
-async def fate_of_hell(og_self):
+async def fate_of_hell(og_self, on_completion):
     async def on_resp_resource_choice(resource):
-        og_target = [og for og_name, og in g_env.OGS.items() if og_name != og_self.name][randint(0, 2)]
+        og_target = [og for og_name, og in g_env.OGS.items(
+        ) if og_name != og_self.name][randint(0, 2)]
 
         async def finish_action():
             amount = randint(1, 25)
@@ -181,13 +194,16 @@ async def fate_of_hell(og_self):
         await check_for_just_say_no(og_self, og_target, PUP_FATE_OF_HELL, finish_action)
 
     await BOT_COMM(og_self.active_id, COMM_CIN, f'You can choose a resource to destroy from a random tribe. The number will be randomised as well.', options=R_LIST, on_response=on_resp_resource_choice)
+    on_completion()
 
 
-async def telescope(og_self):
-    og_target = sorted([og for og_name, og in g_env.OGS.items() if og_name != og_self.name], key=lambda og: og.calculate_points())[0]
+async def telescope(og_self, on_completion):
+    og_target = sorted([og for og_name, og in g_env.OGS.items(
+    ) if og_name != og_self.name], key=lambda og: og.calculate_points())[0]
     resources = og_target.get_resources()
     scores = og_target.calculate_points()
     text = f"Telescope is activated.\n{og_target.name} is leading with {scores} point(s).\nTheir current resources:\n"
     for resource, value in resources.items():
         text += f"{resource}- {value}\n"
     await BOT_COMM(og_self.active_id, COMM_COUT, text)
+    on_completion()

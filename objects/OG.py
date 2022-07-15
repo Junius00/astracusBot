@@ -12,13 +12,14 @@ from objects.Building import Building
 import globals.env as g_env
 import globals.bot as g_bot
 
+
 class OG():
     def __init__(self, name):
         self.name = name
         self.filename = os.path.join(FOLDER_DATA, f'{name}.json')
         self.dominant_r = DOMINANT_RESOURCES[name]
         self.start_c = START_C[name]
-    
+
         # track which telegram chat is linked to current OG
         self.active_id = None
 
@@ -111,29 +112,30 @@ class OG():
         self.dominant_r = obj[OG_DOMINANT_RESOURCES]
         self.active_id = obj[OG_ACTIVE_ID]
         self.r_multiplier = literal_eval(obj[OG_RMULTIPLIER])
-        self.force_resource=obj[OG_FORCE]
-        self.has_insurance=obj[OG_INSURANCE]
-        self.just_say_no_count=literal_eval(obj[OG_NO])
-        self.collateral_buildings=[Building().from_obj(b_obj) for b_obj in obj[OG_COLLATERAL]]
-        self.used_powerups=literal_eval(obj[OG_USED_POWERUPS])
-        self.misc_points=literal_eval(obj[OG_MISC])
+        self.force_resource = obj[OG_FORCE]
+        self.has_insurance = obj[OG_INSURANCE]
+        self.just_say_no_count = literal_eval(obj[OG_NO])
+        self.collateral_buildings = [Building().from_obj(
+            b_obj) for b_obj in obj[OG_COLLATERAL]]
+        self.used_powerups = literal_eval(obj[OG_USED_POWERUPS])
+        self.misc_points = literal_eval(obj[OG_MISC])
 
     def load_from_json(self):
         if os.path.exists(self.filename):
-            f=open(self.filename, 'r')
-            res=json.load(f)
+            f = open(self.filename, 'r')
+            res = json.load(f)
             f.close()
 
-            res[KEY_B]={k: [Building().from_obj(b) for b in v]
+            res[KEY_B] = {k: [Building().from_obj(b) for b in v]
                           for k, v in res[KEY_B].items()}
-            self.items=res
+            self.items = res
             return
 
         self.reset_items()
 
     def save_to_json(self):
-        obj=self.items.copy()
-        obj[KEY_B]={k: [b.to_obj() for b in v]
+        obj = self.items.copy()
+        obj[KEY_B] = {k: [b.to_obj() for b in v]
                       for k, v in obj[KEY_B].items()}
 
         with open(self.filename, 'w') as f:
@@ -149,7 +151,7 @@ class OG():
         text = ""
         for resource, value in self.get_resources().items():
             text += f'{resource}: {value}\n'
-        
+
         return text
 
     def get_resource_count(self, r_key):
@@ -170,17 +172,17 @@ class OG():
         return new_amount, new_amount / amount
 
     def delete_resource(self, r_key, amount):
-        cur=self.items[KEY_R][r_key]
-        new_amount=cur - amount
+        cur = self.items[KEY_R][r_key]
+        new_amount = cur - amount
         if new_amount < 0:
-            new_amount=0
+            new_amount = 0
 
-        self.items[KEY_R][r_key]=new_amount
+        self.items[KEY_R][r_key] = new_amount
 
     # returns True and uses if possible, otherwise False and no change
 
     def use_resource(self, r_key, amount):
-        cur=self.items[KEY_R][r_key]
+        cur = self.items[KEY_R][r_key]
 
         if cur < amount:
             return False
@@ -195,15 +197,15 @@ class OG():
                 raise ValueError(
                     "r_set must be provided if use_resources is True.")
 
-            old_res=self.items[KEY_R].copy()
+            old_res = self.items[KEY_R].copy()
 
-            prices=building.get_price_list()
+            prices = building.get_price_list()
             for p, r in zip(prices, r_set):
-                success=self.use_resource(r, p)
+                success = self.use_resource(r, p)
 
                 # revert immediately if fail
                 if not success:
-                    self.items[KEY_R]=old_res
+                    self.items[KEY_R] = old_res
                     return False
 
         self.items[KEY_B][building.name].append(building)
@@ -219,7 +221,8 @@ class OG():
         return False
 
     def calculate_points(self):
-        b_points = len(self.items[KEY_B][B_HOUSE]) + 3 * len(self.items[KEY_B][B_VILLAGE])
+        b_points = len(self.items[KEY_B][B_HOUSE]) + \
+            3 * len(self.items[KEY_B][B_VILLAGE])
         is_most_used_powerups = True
 
         for og_name, og in g_env.OGS.items():
@@ -229,7 +232,7 @@ class OG():
             if og.used_powerups > self.used_powerups:
                 is_most_used_powerups = False
 
-        pup_points = 6 if is_most_used_powerups else 0 
+        pup_points = 6 if is_most_used_powerups else 0
         return b_points + pup_points + self.misc_points
 
     def can_say_no(self):
@@ -240,20 +243,20 @@ class OG():
 
     # returns True is possible, otherwise False and no change
     def buy_powerup(self, pup, r_set):
-        old_res=self.items[KEY_R].copy()
+        old_res = self.items[KEY_R].copy()
 
-        prices=pup.get_price_list()
+        prices = pup.get_price_list()
         for p, r in zip(prices, r_set):
-            success=self.use_resource(r, p)
+            success = self.use_resource(r, p)
 
             # revert immediately if fail
             if not success:
-                self.items[KEY_R]=old_res
+                self.items[KEY_R] = old_res
                 return False
 
         if not pup.is_instant:
             self.items[KEY_PUP].append(pup)
-            self.items[KEY_PUP]=sorted(
+            self.items[KEY_PUP] = sorted(
                 self.items[KEY_PUP], key=lambda p: p.name)
 
         return True
@@ -267,21 +270,22 @@ class OG():
                 return True
 
         return False
-    
+
     async def use_powerup(self, index):
-        self.used_powerups += 1
-        await self.get_powerups()[index].activate(self)
-        del self.items[KEY_PUP][index]
+        def on_completion():
+            self.used_powerups += 1
+            del self.items[KEY_PUP][index]
+        await self.get_powerups()[index].activate(self, on_completion)
 
     def add_collateral_building(self, building):
-        building.owner=self.name
+        building.owner = self.name
 
         self.collateral_buildings.append(building)
-        self.collateral_buildings=sorted(
+        self.collateral_buildings = sorted(
             self.collateral_buildings, key=lambda b: b.name)
 
     def count_collateral_buildings(self):
-        counts={
+        counts = {
             B_HOUSE: 0,
             B_VILLAGE: 0
         }
