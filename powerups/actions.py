@@ -11,11 +11,13 @@ from bot_needs.comm import BOT_COMM, BOT_MAP
 async def fools_luck_day3(og_self, on_completion):
     og_self.has_collateral_multiplier = True
     await BOT_COMM(og_self.active_id, COMM_COUT, "You will gain 50% more structures from the amount of collateral the losing tribe has put down, if you win the next mass game.")
+    on_completion()
 
 
 async def fools_luck(og_self, on_completion):
     og_self.r_multiplier = 1.5
     await BOT_COMM(og_self.active_id, COMM_COUT, "Your next station game will yield 50% more resources.")
+    on_completion()
 
 
 async def randomizer_of_destiny(og_self, on_completion):
