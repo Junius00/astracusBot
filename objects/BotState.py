@@ -1,5 +1,4 @@
 import asyncio
-from calendar import c
 from telegram import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from async_functions.running import synchronous_run
 

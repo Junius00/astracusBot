@@ -4,12 +4,14 @@ from bot_needs.comm import BOT_COMM, get_chat_id, get_command
 from bot_needs.commands.admin import COMMAND_HANDLERS_ADMIN
 from bot_needs.commands.common import COMMAND_HANDLERS_COMMON
 from bot_needs.commands.og import COMMAND_HANDLERS_OG
+from calculation.days import get_day
 
 from constants.bot.common import COMM_COUT, TOKEN
 from constants.bot.users import ROLE_ADMIN, WHITELIST
 from constants.names import OG_AVARI, OG_KELGRAS, OG_LEVIATHAN, OG_THERON
 from globals.init import init_global, schedule_tasks
 import globals.bot as g_bot
+from scheduling.tasks import make_backup
 
 
 async def command_first_pass(update, context):
@@ -31,7 +33,13 @@ async def command_first_pass(update, context):
         await BOT_COMM(chat_id, COMM_COUT, 'Maybe finish your current command first before trying another one?', is_end_of_sequence=False)
         return
 
+    # if get_day() == None:
+    #     await BOT_COMM(chat_id, COMM_COUT, 'The day is over. You cannot make commands until the next day.', is_end_of_sequence=False)
+    #     return
+
     g_bot.STATE.mark_busy(chat_id)
+
+    make_backup()
 
     await dict(**COMMAND_HANDLERS_ADMIN, **COMMAND_HANDLERS_COMMON, **COMMAND_HANDLERS_OG)[command](update, context)
 
