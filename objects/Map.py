@@ -79,15 +79,14 @@ class Map():
         return {str(k): v.to_obj() for k, v in self.map.items()}
 
     def from_obj(self, obj):
-        {literal_eval(k): Building().to_obj(v) for k, v in obj.items()}
+        {literal_eval(k): Building().from_obj(v) for k, v in obj.items()}
 
     def load_from_json(self):
         if os.path.exists(self.filename):
             f = open(self.filename, 'r')
             res = json.load(f)
             f.close()
-
-            res = {literal_eval(k): Building().to_obj(v)
+            res = {literal_eval(k): Building().from_obj(v)
                    for k, v in res.items()}
             self.map = res
 

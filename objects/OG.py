@@ -137,6 +137,7 @@ class OG():
         obj = self.items.copy()
         obj[KEY_B] = {k: [b.to_obj() for b in v]
                       for k, v in obj[KEY_B].items()}
+        obj[KEY_PUP] = [p.to_obj() for p in obj[KEY_PUP]]
 
         with open(self.filename, 'w') as f:
             json.dump(obj, f)
