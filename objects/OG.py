@@ -11,6 +11,7 @@ from constants.templates import GET_B_TEMPLATE, GET_P_TEMPLATE, GET_R_TEMPLATE
 from objects.Building import Building
 import globals.env as g_env
 import globals.bot as g_bot
+from objects.Powerup import Powerup
 
 
 class OG():
@@ -125,9 +126,10 @@ class OG():
             f = open(self.filename, 'r')
             res = json.load(f)
             f.close()
-
             res[KEY_B] = {k: [Building().from_obj(b) for b in v]
                           for k, v in res[KEY_B].items()}
+            res[KEY_PUP] = [Powerup(p['pName']).from_obj(p['pName'])
+                            for p in res[KEY_PUP]]
             self.items = res
             return
 
@@ -224,16 +226,17 @@ class OG():
     def calculate_points(self):
         b_points = len(self.items[KEY_B][B_HOUSE]) + \
             3 * len(self.items[KEY_B][B_VILLAGE])
-        is_most_used_powerups = True
+        # is_most_used_powerups = True
 
         for og_name, og in g_env.OGS.items():
             if og_name == self.name:
                 continue
 
-            if og.used_powerups > self.used_powerups:
-                is_most_used_powerups = False
+            # if og.used_powerups > self.used_powerups:
+                # is_most_used_powerups = False
 
-        pup_points = 6 if is_most_used_powerups else 0
+        # pup_points = 6 if is_most_used_powerups else 0
+        pup_points = 0
         return b_points + pup_points + self.misc_points
 
     def can_say_no(self):
@@ -301,3 +304,9 @@ class OG():
 
     def add_flag_lost(self):
         self.flags_lost = min(self.flags_lost + 1, 3)
+
+    def add_misc_points(self, points):
+        self.misc_points += points
+
+    def remove_misc_points(self, points):
+        self.misc_points -= points

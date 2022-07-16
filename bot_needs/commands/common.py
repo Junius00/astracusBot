@@ -8,6 +8,7 @@ from constants.bot.users import ROLE_ADMIN
 import globals.bot as g_bot
 import globals.env as g_env
 
+
 async def start_handler(update, context):
     chat_id = get_chat_id(update)
     role = get_identity(get_user(update))
@@ -19,7 +20,7 @@ async def start_handler(update, context):
         await g_env.OGS[role].set_active_id(chat_id)
     else:
         g_bot.STATE.add_admin_id(chat_id)
-    
+
     await g_bot.STATE.app.bot.set_my_commands(BOTCOMMANDS_COMMON + add_bot_commands, scope=scope)
     await g_bot.STATE.send_message(chat_id, f'Welcome to AstracusBot. You are logged in as {role}.')
 
@@ -35,21 +36,35 @@ async def start_handler(update, context):
         await g_bot.STATE.start_game()
     else:
         await g_bot.STATE.send_message(chat_id, f'Please wait for all OGs to join.\nNot joined: {", ".join(not_joined)}')
-    
+
+
 async def view_map(update, context):
     chat_id = get_chat_id(update)
 
     if not await alerted_map_lock(chat_id):
         await BOT_MAP(chat_id)
-    
+
     g_bot.STATE.mark_free(chat_id)
 
+
+async def cancel_handler(update, context):
+    chat_id = get_chat_id(update)
+
+    g_env.MAP.unlock(chat_id)
+    g_bot.STATE.mark_free(chat_id)
+    g_bot.STATE.clear_pending(chat_id)
+    await g_bot.STATE.send_message(chat_id, f'Your last command has been cancelled.')
+
+
 BOTCOMMANDS_COMMON = [
-    BotCommand('start', 'Take control of your OG / Sign in as an admin, depending on who you are.'),
-    BotCommand('viewmap', 'View the current map.')
+    BotCommand(
+        'start', 'Take control of your OG / Sign in as an admin, depending on who you are.'),
+    BotCommand('viewmap', 'View the current map.'),
+    BotCommand('cancel', 'Cancel pending bot commands.')
 ]
 
 COMMAND_HANDLERS_COMMON = {
     'start': start_handler,
-    'viewmap': view_map
+    'viewmap': view_map,
+    'cancel': cancel_handler,
 }

@@ -20,13 +20,14 @@ class Powerup():
             P_NAME: self.name
         }
 
-    def from_obj(self, obj):
-        self.name = obj[P_NAME]
-        info = PUP_INFO()[self.name]
+    def from_obj(self, name):
+        info = PUP_INFO()[name]
         self.ratio = PUP_RATIO
         self.desc = info[KEY_PUP_DESC]
         self.action = info[KEY_PUP_ACTION]
         self.is_instant = info[KEY_PUP_IS_INSTANT]
+
+        return self
 
     def get_price_list(self):
         return ratio_to_price_list(self.ratio)

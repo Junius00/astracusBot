@@ -74,7 +74,7 @@ async def buy_building(update, context):
         else:
             await BOT_COMM(chat_id, COMM_COUT, "Purchase failed. Please try again later.")
 
-        g_env.MAP.unlock()
+        g_env.MAP.unlock(chat_id)
 
     async def on_resp_resource_set(type, set):
         await BOT_MAP(chat_id, choices)
@@ -90,17 +90,17 @@ async def buy_building(update, context):
 
         if not choices:
             await BOT_COMM(chat_id, COMM_COUT, "No locations available.")
-            g_env.MAP.unlock()
+            g_env.MAP.unlock(chat_id)
         elif not r_sets:
             await BOT_COMM(chat_id, COMM_COUT, "Cannot afford building.")
-            g_env.MAP.unlock()
+            g_env.MAP.unlock(chat_id)
         else:
             price_list = b.get_price_list()
             r_options = [", ".join([f'{p} {r}' for p, r in zip(
                 price_list, r_set)]) for r_set in r_sets]
             await BOT_COMM(chat_id, COMM_CIN, f"Select resource set:\n\nCurrent Resources:\n{og.pretty_print_resources()}", options=r_options, on_response=lambda set: on_resp_resource_set(type, r_sets[r_options.index(set)]))
 
-    g_env.MAP.lock()
+    g_env.MAP.lock(chat_id)
     await BOT_COMM(chat_id, COMM_CIN, "Please enter building type.", options=B_LIST, on_response=on_resp_building_type)
 
 
@@ -247,7 +247,7 @@ async def place_collateral_buildings(update, context):
             await place_building(bslice[0])
             return
 
-        g_env.MAP.unlock()
+        g_env.MAP.unlock(chat_id)
         await BOT_COMM(chat_id, COMM_COUT, f'Placed all possible collateral buildings.\n\nRemaining unplaced collateral:\n{og.pretty_print_collateral_buildings()}')
 
     async def place_building(b):
@@ -266,7 +266,7 @@ async def place_collateral_buildings(update, context):
         await BOT_MAP(chat_id, choices)
         await BOT_COMM(chat_id, COMM_CIN, f'Please choose a location to place your new {b.name}.', options=list(range(1, len(choices) + 1)), on_response=lambda choice: on_resp_loc(b, choices[int(choice) - 1]))
 
-    g_env.MAP.lock()
+    g_env.MAP.lock(chat_id)
     await place_building(og.collateral_buildings[0])
 
 BOTCOMMANDS_OG = [

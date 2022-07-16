@@ -20,7 +20,7 @@ async def command_first_pass(update, context):
         # cannot extract command
         return
 
-    if command == 'start':
+    if command == 'start' or command == 'cancel':
         await COMMAND_HANDLERS_COMMON[command](update, context)
         return
 

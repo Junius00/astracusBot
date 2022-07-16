@@ -29,23 +29,24 @@ from scheduling import schedule_dt
 class Map():
     def __init__(self):
         # prevents OGs from all editing the map at once; prevent rule breaking
-        self.map_lock = False
+        self.map_lock = None
 
         self.filename = os.path.join(FOLDER_DATA, "map.json")
         self.map_img = os.path.join(FOLDER_ASSETS, "board.png")
         self.load_from_json()
 
-    def lock(self, timeout_s=120):
-        self.map_lock = True
+    def lock(self, chat_id, timeout_s=120):
+        self.map_lock = chat_id
 
         if timeout_s > 0:
             schedule_dt(dt.now() + timedelta(seconds=timeout_s), self.unlock)
 
-    def unlock(self):
-        self.map_lock = False
+    def unlock(self, chat_id):
+        if chat_id == self.map_lock:
+            self.map_lock = None
 
     def is_locked(self):
-        return self.map_lock
+        return self.map_lock is not None
 
     def reset_map(self):
         self.map = {}

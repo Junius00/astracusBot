@@ -12,7 +12,7 @@ admin functions:
 - add misc points (e.g. flag stealing)
 """
 
-import math
+from random import randint
 from telegram import BotCommand
 from bot_needs.comm import BOT_COMM, BOT_MAP, get_chat_id
 from constants.bot.common import COMM_CIN, COMM_COUT
@@ -156,6 +156,20 @@ async def move_collateral_buildings(update, context):
 async def mark_flags_stolen(update, context):
     id = get_chat_id(update)
 
+    async def on_resp_og_culprit(og_victim, og_culprit):
+        og_v = g_env.OGS[og_victim]
+        og_c = g_env.OGS[og_culprit]
+        og_v.add_flag_lost()
+        og_c.add_resource(R_LIST[randint(0, 3)], 30)
+        await BOT_COMM(id, COMM_COUT, f'Flag has been stolen from {og_victim} by {og_culprit}. {og_victim} has lost {og_v.flags_lost} flag(s) today.')
+        await BOT_COMM(og_v.active_id, COMM_COUT, f'One of your flags has been stolen. You have lost {og_v.flags_lost} flag(s) today.')
+        await BOT_COMM(og_c.active_id, COMM_COUT, f'You have stolen a flag from {og_victim}! You have received 30 random resources.')
+
+    async def on_resp_og_victim(og_victim):
+        await BOT_COMM(id, COMM_CIN, 'Which OG was the culprit?', options=OGS_LIST, on_response=lambda og_culprit: on_resp_og_culprit(og_victim, og_culprit))
+
+    await BOT_COMM(id, COMM_CIN, 'Please choose the OG who got their flag stolen', options=OGS_LIST, on_response=on_resp_og_victim)
+
 
 async def get_scores(update, context):
     id = get_chat_id(update)
@@ -185,7 +199,48 @@ async def view_resources(update, context):
 
 
 async def add_misc_points(update, context):
-    pass
+    id = get_chat_id(update)
+
+    async def on_resp_number(og_name, r, count):
+        try:
+            count = int(count)
+            assert count > 0
+        except:
+            await BOT_COMM(id, COMM_CIN, 'An invalid amount was entered. Please enter an integer amount (greater than 0) to remove.', on_response=lambda count: on_resp_number(og_name, r, count))
+            return
+
+        og = g_env.OGS[og_name]
+        og.add_misc_points(count)
+        await BOT_COMM(id, COMM_COUT, f'{count} point(s) has been added from {og_name}. [New total: {og.misc_points}]')
+        await BOT_COMM(og.active_id, COMM_COUT, f'{count} point(s) has been added. [New total: {og.misc_points}]', is_end_of_sequence=False)
+
+    async def on_resp_og(og_name):
+        await BOT_COMM(id, COMM_CIN, 'Please enter an integer amount (greater than 0) of points to give.', on_response=lambda count: on_resp_number(og_name, count))
+
+    await BOT_COMM(id, COMM_CIN, 'Please choose an OG to give misc points to.', options=OGS_LIST, on_response=on_resp_og)
+
+
+async def remove_misc_points(update, context):
+    id = get_chat_id(update)
+
+    async def on_resp_number(og_name, r, count):
+        try:
+            count = int(count)
+            assert count > 0
+        except:
+            await BOT_COMM(id, COMM_CIN, 'An invalid amount was entered. Please enter an integer amount (greater than 0) to remove.', on_response=lambda count: on_resp_number(og_name, r, count))
+            return
+
+        og = g_env.OGS[og_name]
+        og.remove_misc_points(count)
+        await BOT_COMM(id, COMM_COUT, f'{count} point(s) has been removed from {og_name}. [New total: {og.misc_points}]')
+        await BOT_COMM(og.active_id, COMM_COUT, f'{count} point(s) has been removed. [New total: {og.misc_points}]', is_end_of_sequence=False)
+
+    async def on_resp_og(og_name):
+        await BOT_COMM(id, COMM_CIN, 'Please enter an integer amount (greater than 0) of points to give.', on_response=lambda count: on_resp_number(og_name, count))
+
+    await BOT_COMM(id, COMM_CIN, 'Please choose an OG to remove misc points from.', options=OGS_LIST, on_response=on_resp_og)
+
 
 BOTCOMMANDS_ADMIN = [
     BotCommand('addresource', 'Add a number of resources to an OG.'),
@@ -195,6 +250,7 @@ BOTCOMMANDS_ADMIN = [
     BotCommand('getscores', 'Get scores of all OGs.'),
     BotCommand('viewresources', 'View resources of all OGs.'),
     BotCommand('addmiscpoints', 'Add miscellaneous points to an OG.'),
+    BotCommand('removemiscpoints', 'Remove miscellaneous points to an OG.'),
 ]
 
 COMMAND_HANDLERS_ADMIN = {
@@ -203,5 +259,6 @@ COMMAND_HANDLERS_ADMIN = {
     'movecollateralbuildings': move_collateral_buildings,
     'getscores': get_scores,
     'viewresources': view_resources,
-    'addmiscpoints': add_misc_points
+    'addmiscpoints': add_misc_points,
+    'removemiscpoints': remove_misc_points,
 }
