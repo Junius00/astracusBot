@@ -29,7 +29,7 @@ async def randomizer_of_destiny(og_self, on_completion):
         await BOT_COMM(og_self.active_id, COMM_COUT, f"{dice} cop{copy_ending} of {r} has been added.")
         on_completion()
 
-    await BOT_COMM(og_self.active_id, COMM_CIN, f"Please choose a resource type to get {dice} cop{copy_ending} of.\n\nCurrent Resources:\n{og_self.pretty_print_resources()}", options=R_LIST, on_response=response)
+    await BOT_COMM(og_self.active_id, COMM_CIN, f"Please choose a resource type to get a randomized number of resources for.\n\nCurrent Resources:\n{og_self.pretty_print_resources()}", options=R_LIST, on_response=response)
 
 
 async def power_of_trade(og_self, on_completion):
@@ -62,7 +62,7 @@ async def power_of_trade(og_self, on_completion):
 
     async def on_resp_rget(rget):
         await BOT_COMM(chat_id, COMM_CIN, f'Please choose a resource to give in return for {rget}.', options=[r for r in R_LIST if r != rget], on_response=lambda rgive: on_resp_rgive(rget, rgive))
-    
+
     await BOT_COMM(chat_id, COMM_CIN, f'Please choose a resource to receive.\n\nCurrent Resources:\n{og_self.pretty_print_resources()}', options=R_LIST, on_response=on_resp_rget)
 
 
@@ -100,6 +100,8 @@ async def paving_the_way(og_self, on_completion):
     await BOT_COMM(og_self.active_id, COMM_CIN, 'Please choose a road option from the map image.', options=[x + 1 for x in range(len(choices))], on_response=response)
 
 # used if another OG is targeted
+
+
 async def check_for_just_say_no(og_self, og_target, pup_name, finish_action):
     async def response(res):
         if res == RESP_YES:
