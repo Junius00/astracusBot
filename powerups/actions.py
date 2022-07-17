@@ -28,7 +28,7 @@ async def randomizer_of_destiny(og_self, on_completion):
         og_self.add_resource(r, dice)
         await BOT_COMM(og_self.active_id, COMM_COUT, f"{dice} cop{copy_ending} of {r} has been added.")
 
-    await BOT_COMM(og_self.active_id, COMM_CIN, f"Please choose a resource type to get {dice} cop{copy_ending} of.", options=R_LIST, on_response=response)
+    await BOT_COMM(og_self.active_id, COMM_CIN, f"Please choose a resource type to get {dice} cop{copy_ending} of.\n\nCurrent Resources:\n{og_self.pretty_print_resources()}", options=R_LIST, on_response=response)
     on_completion()
 
 
@@ -61,7 +61,7 @@ async def power_of_trade(og_self, on_completion):
 
     async def on_resp_rget(rget):
         await BOT_COMM(chat_id, COMM_CIN, f'Please choose a resource to give in return for {rget}.', options=[r for r in R_LIST if r != rget], on_response=lambda rgive: on_resp_rgive(rget, rgive))
-    await BOT_COMM(chat_id, COMM_CIN, 'Please choose a resource to receive.', options=R_LIST, on_response=on_resp_rget)
+    await BOT_COMM(chat_id, COMM_CIN, f'Please choose a resource to receive.\n\nCurrent Resources:\n{og_self.pretty_print_resources()}', options=R_LIST, on_response=on_resp_rget)
     on_completion()
 
 
@@ -72,7 +72,7 @@ async def barter_trade(og_self, on_completion):
         og_self.force_resource = r
         await BOT_COMM(chat_id, COMM_COUT, f'Done! Your next resource gained will be {r}.')
 
-    await BOT_COMM(chat_id, COMM_CIN, 'Please choose a resource to gain as your next station game reward.', options=R_LIST, on_response=response)
+    await BOT_COMM(chat_id, COMM_CIN, f'Please choose a resource to gain as your next station game reward.\n\nCurrent Resources:\n{og_self.pretty_print_resources()}', options=R_LIST, on_response=response)
     on_completion()
 
 
