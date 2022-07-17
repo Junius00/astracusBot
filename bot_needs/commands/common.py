@@ -51,6 +51,10 @@ async def view_map(update, context):
 async def cancel_handler(update, context):
     chat_id = get_chat_id(update)
 
+    g_bot.STATE.mark_is_cancelling(chat_id, True)
+    g_bot.STATE.get_handler(chat_id)(update, context)
+    g_bot.STATE.mark_is_cancelling(chat_id, False)
+
     g_env.MAP.unlock(chat_id)
     await BOT_COMM(chat_id, COMM_COUT, 'Your last command has been cancelled.')
 
