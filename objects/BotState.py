@@ -122,5 +122,8 @@ class BotState():
     async def default_handler(self, update, context):
         await self.send_message(get_chat_id(update), 'We don\'t know what to do with that information. Try a command?')
 
+    def has_handler(self, chat_id):
+        return not self.pending.get(chat_id, None) is None
+
     def get_handler(self, chat_id):
         return self.pending.get(chat_id, self.default_handler)
