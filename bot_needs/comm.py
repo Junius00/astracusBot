@@ -29,7 +29,7 @@ async def BOT_COMM(chat_id, dir, msg, is_end_of_sequence=True, options=None, on_
         async def on_resp(update, context):
             msg_text = update.message.text
 
-            if options and msg_text not in [str(x) for x in options] and not g_bot.STATE.check_is_cancelling(chat_id):
+            if options and msg_text not in [str(x) for x in options]:
                 await g_bot.STATE.send_message(chat_id, 'Invalid input. Please select one of the options and try again.')
                 g_bot.STATE.add_pending(chat_id, on_resp)
                 await g_bot.STATE.send_message(chat_id, msg, options=options)

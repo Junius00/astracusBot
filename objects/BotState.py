@@ -17,9 +17,6 @@ class BotState():
         self.app = app
 
         # stores { chat_id: True/False }
-        self.is_cancelling = {}
-
-        # stores { chat_id: True/False }
         self.is_busy = {}
 
         # stores { chat_id: [ action_queue ] }
@@ -28,11 +25,8 @@ class BotState():
         # stores { chat_id: pending_handler }
         self.pending = {}
 
-    def mark_is_cancelling(self, chat_id, value):
-        self.is_cancelling[chat_id] = value
-
-    def check_is_cancelling(self, chat_id):
-        return self.is_cancelling.get(chat_id, False)
+        # stores { chat_id: on_cancel }
+        self.on_cancels = {}
 
     def mark_busy(self, chat_id):
         self.is_busy[chat_id] = True
@@ -127,3 +121,11 @@ class BotState():
 
     def get_handler(self, chat_id):
         return self.pending.get(chat_id, self.default_handler)
+
+    def add_on_cancel(self, chat_id, on_cancel):
+        self.on_cancels[chat_id] = on_cancel
+    
+    async def call_on_cancel(self, chat_id):
+        if chat_id in self.on_cancels:
+            await self.on_cancels[chat_id]()
+            del self.on_cancels[chat_id]

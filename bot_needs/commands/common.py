@@ -50,25 +50,21 @@ async def view_map(update, context):
 
 async def cancel_handler(update, context):
     chat_id = get_chat_id(update)
-
-    g_bot.STATE.mark_is_cancelling(chat_id, True)
-    if g_bot.STATE.has_handler(chat_id):
-        await g_bot.STATE.get_handler(chat_id)(update, context)
-    g_bot.STATE.mark_is_cancelling(chat_id, False)
+    await g_bot.STATE.call_on_cancel(chat_id)
 
     g_env.MAP.unlock(chat_id)
-    await BOT_COMM(chat_id, COMM_COUT, 'Your last command has been cancelled.')
+    await BOT_COMM(chat_id, COMM_COUT, 'Your last command has been cancelled.' if g_bot.STATE.has_handler(chat_id) else 'There is nothing to cancel at the moment.')
 
 
 BOTCOMMANDS_COMMON = [
     BotCommand(
         'start', 'Take control of your OG / Sign in as an admin, depending on who you are.'),
-    BotCommand('viewmap', 'View the current map.'),
-    BotCommand('cancel', 'Cancel pending bot commands.')
+    BotCommand('cancel', 'Cancel pending bot commands.'),
+    BotCommand('viewmap', 'View the current map.')
 ]
 
 COMMAND_HANDLERS_COMMON = {
     'start': start_handler,
-    'viewmap': view_map,
     'cancel': cancel_handler,
+    'viewmap': view_map,
 }

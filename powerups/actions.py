@@ -104,16 +104,11 @@ async def paving_the_way(og_self, on_completion):
 
 
 async def check_for_just_say_no(og_self, og_target, pup_name, finish_action):
+    async def continued_action():
+        await BOT_COMM(og_self.active_id, COMM_COUT, f'{og_target.name} has decided to not negate your {pup_name} card.', is_end_of_sequence=False)
+        await finish_action()
+    
     async def response(res):
-        async def continued_action():
-            await BOT_COMM(og_self.active_id, COMM_COUT, f'{og_target.name} has decided to not negate your {pup_name} card.', is_end_of_sequence=False)
-            await finish_action()
-
-        if g_bot.STATE.check_is_cancelling(og_target.active_id):
-            await BOT_COMM(og_target.active_id, COMM_COUT, f'By cancelling, you have chosen to say {RESP_NO} by default.')
-            g_bot.STATE.try_action(og_self.active_id, continued_action)
-            return
-        
         if res == RESP_YES:
             og_target.say_no()
             await BOT_COMM(og_self.active_id, COMM_COUT,
@@ -122,19 +117,26 @@ async def check_for_just_say_no(og_self, og_target, pup_name, finish_action):
                            f'{PUP_JUST_SAY_NO} is activated. You successfully avoided another tribe\'s action against you! Joke\'s on them!')
         elif res == RESP_NO:
             await BOT_COMM(og_target.active_id, COMM_COUT, f'You have chosen not to use a {PUP_JUST_SAY_NO} card. {pup_name} will be used against you.')
+
             g_bot.STATE.try_action(og_self.active_id, continued_action)
 
     if og_target.can_say_no():
         await BOT_COMM(og_self.active_id, COMM_COUT, f'Waiting for {og_target.name} to decide if they want to use {PUP_JUST_SAY_NO}. Please do something else in the meantime.')
 
         async def queue_action():
+            async def on_cancel():
+                await BOT_COMM(og_target.active_id, COMM_COUT, f'By cancelling, you have chosen to say {RESP_NO} by default.')
+                g_bot.STATE.try_action(og_self.active_id, continued_action)
+    
+            g_bot.STATE.add_on_cancel(og_target.active_id, on_cancel)
+            
             await BOT_COMM(
                 og_target.active_id, COMM_CIN,
                 f"Another OG is trying to use {pup_name} on you. Will you use a '{PUP_JUST_SAY_NO}' Card? Cancelling this will say {RESP_NO} by default. ({og_target.just_say_no_count} left)",
                 options=[RESP_YES, RESP_NO],
                 on_response=response
             )
-
+    
         g_bot.STATE.try_action(og_target.active_id, queue_action)
         return
 
