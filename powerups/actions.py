@@ -27,9 +27,9 @@ async def randomizer_of_destiny(og_self, on_completion):
     async def response(r):
         og_self.add_resource(r, dice)
         await BOT_COMM(og_self.active_id, COMM_COUT, f"{dice} cop{copy_ending} of {r} has been added.")
+        on_completion()
 
     await BOT_COMM(og_self.active_id, COMM_CIN, f"Please choose a resource type to get {dice} cop{copy_ending} of.\n\nCurrent Resources:\n{og_self.pretty_print_resources()}", options=R_LIST, on_response=response)
-    on_completion()
 
 
 async def power_of_trade(og_self, on_completion):
@@ -51,6 +51,7 @@ async def power_of_trade(og_self, on_completion):
         og_self.add_resource(rget, count)
 
         await BOT_COMM(chat_id, COMM_COUT, f'Successfully traded {count} {rgive} for {count} {rget}!')
+        on_completion()
 
     async def on_resp_rgive(rget, rgive):
         if rget == rgive:
@@ -61,8 +62,8 @@ async def power_of_trade(og_self, on_completion):
 
     async def on_resp_rget(rget):
         await BOT_COMM(chat_id, COMM_CIN, f'Please choose a resource to give in return for {rget}.', options=[r for r in R_LIST if r != rget], on_response=lambda rgive: on_resp_rgive(rget, rgive))
+    
     await BOT_COMM(chat_id, COMM_CIN, f'Please choose a resource to receive.\n\nCurrent Resources:\n{og_self.pretty_print_resources()}', options=R_LIST, on_response=on_resp_rget)
-    on_completion()
 
 
 async def barter_trade(og_self, on_completion):
@@ -71,9 +72,9 @@ async def barter_trade(og_self, on_completion):
     async def response(r):
         og_self.force_resource = r
         await BOT_COMM(chat_id, COMM_COUT, f'Done! Your next resource gained will be {r}.')
+        on_completion()
 
     await BOT_COMM(chat_id, COMM_CIN, f'Please choose a resource to gain as your next station game reward.\n\nCurrent Resources:\n{og_self.pretty_print_resources()}', options=R_LIST, on_response=response)
-    on_completion()
 
 
 async def insurance(og_self, on_completion):
@@ -93,13 +94,12 @@ async def paving_the_way(og_self, on_completion):
         og_self.buy_building(b, use_resources=False)
         g_env.MAP.place_building(choices[i-1], b)
         await BOT_COMM(og_self.active_id, COMM_COUT, 'A road has been placed.')
+        on_completion()
 
     await BOT_MAP(og_self.active_id, choices)
     await BOT_COMM(og_self.active_id, COMM_CIN, 'Please choose a road option from the map image.', options=[x + 1 for x in range(len(choices))], on_response=response)
-    on_completion()
+
 # used if another OG is targeted
-
-
 async def check_for_just_say_no(og_self, og_target, pup_name, finish_action):
     async def response(res):
         if res == RESP_YES:
@@ -143,6 +143,7 @@ async def road_block(og_self, on_completion):
 
         await BOT_COMM(og_self.active_id, COMM_COUT, 'The top OG will have their next earnings halved.')
         await BOT_COMM(og_target.active_id, COMM_COUT, "Because another OG used Road Block, your OG's earnings have been halved for the next game!", is_end_of_sequence=False)
+        on_completion()
 
     await check_for_just_say_no(og_self, og_target, PUP_ROAD_BLOCK, finish_action)
     on_completion()
@@ -166,11 +167,11 @@ async def sneaky_thief(og_self, on_completion):
             else:
                 await BOT_COMM(og_self.active_id, COMM_COUT, f'You have stolen 25 {resource} from {og_target.name}.')
             await BOT_COMM(og_target.active_id, COMM_COUT, f'Oh no! Another tribe has activated Sneaky Thief. {stolen} {resource} has been stolen from you.', is_end_of_sequence=False)
+            on_completion()
 
         await check_for_just_say_no(og_self, og_target, PUP_SNEAKY_THIEF, finish_action)
 
     await BOT_COMM(og_self.active_id, COMM_CIN, f'You can steal 25 random resources from another tribe of choice.', options=[OG for OG in OGS_LIST if OG != og_self.name], on_response=on_resp_og_choice)
-    on_completion()
 
 
 async def just_say_no(og_self, on_completion):
@@ -192,10 +193,11 @@ async def fate_of_hell(og_self, on_completion):
             await BOT_COMM(og_self.active_id, COMM_COUT, f"Fate of Hell is activated. You have successfully destroyed {destroyed} {resource} from {og_target.name}")
             await BOT_COMM(og_target.active_id, COMM_COUT, f"Oh no! Another tribe has activated the Fate of Hell. {destroyed} {resource} that you own has been destroyed.", is_end_of_sequence=False)
 
+            on_completion()
+
         await check_for_just_say_no(og_self, og_target, PUP_FATE_OF_HELL, finish_action)
 
     await BOT_COMM(og_self.active_id, COMM_CIN, f'You can choose a resource to destroy from a random tribe. The number will be randomised as well.', options=R_LIST, on_response=on_resp_resource_choice)
-    on_completion()
 
 
 async def telescope(og_self, on_completion):
@@ -203,7 +205,7 @@ async def telescope(og_self, on_completion):
     ) if og_name != og_self.name], key=lambda og: og.calculate_points())[0]
     resources = og_target.get_resources()
     scores = og_target.calculate_points()
-    text = f"Telescope is activated.\n{og_target.name} is leading with {scores} point(s).\nTheir current resources:\n"
+    text = f"Telescope is activated.\n\n{og_target.name} is leading with {scores} point(s).\nTheir current resources:\n"
     for resource, value in resources.items():
         text += f"{resource}- {value}\n"
     await BOT_COMM(og_self.active_id, COMM_COUT, text)
