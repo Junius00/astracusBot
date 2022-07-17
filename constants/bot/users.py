@@ -12,7 +12,7 @@ WHITELIST = {
     'gohkaixuan': OG_THERON,
     #
     'fdddd75': OG_LEVIATHAN,
-    'cathsornnbot': OG_THERON,
+    'cathsornnbot': ROLE_ADMIN,
     'GravityGhost': OG_KELGRAS,
     'juniuspun': OG_AVARI,
 }

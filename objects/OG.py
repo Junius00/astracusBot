@@ -55,7 +55,7 @@ class OG():
 
     async def set_active_id(self, new_id):
         if self.active_id and self.active_id != new_id:
-            if g_bot.check_busy(self.active_id):
+            if g_bot.STATE.check_busy(self.active_id):
                 await BOT_COMM(new_id, COMM_COUT, 'The current OG chat is in the middle of an action. Complete it first, then try and take control again using /start.')
                 return
 
@@ -74,10 +74,14 @@ class OG():
         house.owner = self.name
         self.items[KEY_B][B_HOUSE] = [house] + self.items[KEY_B][B_HOUSE]
 
-    def get_starting_house(self):
+    def get_starting_building(self):
         houses = self.get_houses()
+        villages = self.get_villages()
 
         if not houses:
+            if villages:
+                return villages[0]
+            
             return None
 
         return houses[0]
@@ -211,6 +215,7 @@ class OG():
                     self.items[KEY_R] = old_res
                     return False
 
+        building.owner = self.name
         self.items[KEY_B][building.name].append(building)
         return True
 

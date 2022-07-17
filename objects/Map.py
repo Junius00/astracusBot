@@ -39,7 +39,7 @@ class Map():
         self.map_lock = chat_id
 
         if timeout_s > 0:
-            schedule_dt(dt.now() + timedelta(seconds=timeout_s), self.unlock)
+            schedule_dt(dt.now() + timedelta(seconds=timeout_s), self.unlock, chat_id)
 
     def unlock(self, chat_id):
         if chat_id == self.map_lock:
@@ -142,7 +142,7 @@ class Map():
 
     def get_possible_choices(self, og, building, override_building_type=None):
         def road():
-            start = og.get_starting_house()
+            start = og.get_starting_building()
             if not start:
                 return []
 
@@ -169,7 +169,7 @@ class Map():
         def house():
             possible = []
 
-            if not og.get_starting_house():
+            if not og.get_starting_building():
                 possible.append(og.start_c)
 
             for r in og.get_roads():

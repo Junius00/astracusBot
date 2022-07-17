@@ -82,7 +82,6 @@ def test_build_map():
                 
                 b = Building()
                 b.set_name(btype)
-                b.owner = og.name
 
                 r_sets = b.try_build(og)
                 choices = map.get_possible_choices(og, b)

@@ -4,13 +4,10 @@ import globals.env as g_env
 from objects.BotState import BotState
 from objects.OG import OG
 from objects.Map import Map
-from objects.Building import Building
-from constants.names import B_HOUSE
-from constants.map.positions import START_AVARI, START_KELGRAS, START_LEVIATHAN, START_THERON
 from constants.powerups import PUP_INFO
 
 from scheduling import schedule_dt, schedule_dt_async
-from scheduling.tasks import clear_pending_actions, revert_flags_lost, switch_fools_luck
+from scheduling.tasks import clear_pending_actions, make_backup, revert_flags_lost, switch_fools_luck
 
 from powerups.allocation import load_pups
 
@@ -26,6 +23,9 @@ def schedule_tasks():
 
     # clear all pending actions
     clear_pending_actions()
+
+    # initialise backup sequence
+    make_backup()
 
 
 def init_global(app):

@@ -162,8 +162,8 @@ async def mark_flags_stolen(update, context):
         og_v.add_flag_lost()
         og_c.add_resource(R_LIST[randint(0, 3)], 30)
         await BOT_COMM(id, COMM_COUT, f'Flag has been stolen from {og_victim} by {og_culprit}. {og_victim} has lost {og_v.flags_lost} flag(s) today.')
-        await BOT_COMM(og_v.active_id, COMM_COUT, f'One of your flags has been stolen. You have lost {og_v.flags_lost} flag(s) today.')
-        await BOT_COMM(og_c.active_id, COMM_COUT, f'You have stolen a flag from {og_victim}! You have received 30 random resources.')
+        await BOT_COMM(og_v.active_id, COMM_COUT, f'One of your flags has been stolen. You have lost {og_v.flags_lost} flag(s) today.', is_end_of_sequence=False)
+        await BOT_COMM(og_c.active_id, COMM_COUT, f'You have stolen a flag from {og_victim}! You have received 30 random resources.', is_end_of_sequence=False)
 
     async def on_resp_og_victim(og_victim):
         await BOT_COMM(id, COMM_CIN, 'Which OG was the culprit?', options=OGS_LIST, on_response=lambda og_culprit: on_resp_og_culprit(og_victim, og_culprit))

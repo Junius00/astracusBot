@@ -17,6 +17,7 @@ def get_chat_id(update):
 
 async def BOT_MAP(chat_id, choices=None):
     map_img = g_env.MAP.generate_map_img(choices=choices)
+    await g_bot.STATE.send_message(chat_id, 'Loading the map...')
     await g_bot.STATE.send_image(chat_id, map_img)
 
 

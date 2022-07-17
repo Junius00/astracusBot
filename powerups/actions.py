@@ -85,7 +85,6 @@ async def insurance(og_self, on_completion):
 async def paving_the_way(og_self, on_completion):
     b = Building()
     b.set_name(B_ROAD)
-    b.owner = og_self.name
 
     choices = g_env.MAP.get_possible_choices(og_self, b)
 

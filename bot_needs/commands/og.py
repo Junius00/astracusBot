@@ -65,12 +65,14 @@ async def buy_building(update, context):
             c = choices[int(loc) - 1]
             existing_b = g_env.MAP.get_building(c)
             if existing_b:
-                g_env.MAP.remove_building(existing_b)
                 og.delete_building(existing_b)
+                g_env.MAP.remove_building(existing_b)
 
             g_env.MAP.place_building(c, b)
-            await BOT_COMM(chat_id, COMM_COUT, f"Building of type {type} placed.")
+
             await BOT_MAP(chat_id)
+            await BOT_COMM(chat_id, COMM_COUT, f"Building of type {type} placed.")
+            
         else:
             await BOT_COMM(chat_id, COMM_COUT, "Purchase failed. Please try again later.")
 
@@ -82,7 +84,6 @@ async def buy_building(update, context):
 
     async def on_resp_building_type(type):
         b.set_name(type)
-        b.owner = og.name
         r_sets = b.try_build(og)
 
         nonlocal choices
@@ -233,14 +234,15 @@ async def place_collateral_buildings(update, context):
     async def on_resp_loc(building, c):
         existing_b = g_env.MAP.get_building(c)
         if existing_b:
-            g_env.MAP.remove_building(existing_b)
             og.delete_building(existing_b)
+            g_env.MAP.remove_building(existing_b)
 
+        og.buy_building(building, use_resources=False)
         g_env.MAP.place_building(c, building)
         del og.collateral_buildings[skip]
 
-        await BOT_COMM(chat_id, COMM_COUT, f"Building of type {type} placed.")
         await BOT_MAP(chat_id)
+        await BOT_COMM(chat_id, COMM_COUT, f"Building of type {building.name} placed.")
 
         bslice = og.collateral_buildings[skip:]
         if bslice:
@@ -261,6 +263,11 @@ async def place_collateral_buildings(update, context):
         if not choices:
             nonlocal skip
             skip += 1
+
+            if not og.collateral_buildings[skip:]:
+                msg = 'Placed all possible collateral buildings.' if skip > 1 else 'Could not place any collateral buildings.'
+                g_env.MAP.unlock(chat_id)
+                await BOT_COMM(chat_id, COMM_COUT, f'{msg}\n\nRemaining unplaced collateral:\n{og.pretty_print_collateral_buildings()}')
             return
 
         await BOT_MAP(chat_id, choices)

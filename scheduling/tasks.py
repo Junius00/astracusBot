@@ -47,12 +47,13 @@ def clear_pending_actions(interval_s=5):
     g_bot.STATE.do_all_actions()
 
     schedule_dt(dt.now() + timedelta(seconds=interval_s),
-                clear_pending_actions)
+                clear_pending_actions, interval_s=interval_s)
 
 # Makes backup for whatever needs it
 
-def make_backup():
-    print(f'Making backup.')
+def make_backup(interval_s=10):
+    print(f'Making backup at {dt.now()}')
+
     for og in g_env.OGS.values():
         og.save_to_json()
     g_env.MAP.save_to_json()
@@ -61,4 +62,6 @@ def make_backup():
         pups[key] = dic[KEY_PUP_QUANTITY]
     with open(PUP_FILENAME, 'w') as f:
         json.dump(pups, f)
-    
+
+    schedule_dt(dt.now() + timedelta(seconds=interval_s),
+                make_backup, interval_s=interval_s)
