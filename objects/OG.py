@@ -6,6 +6,7 @@ from bot_needs.comm import BOT_COMM
 from constants.bot.common import COMM_COUT
 from constants.names import B_HOUSE, B_ROAD, B_VILLAGE, KEY_B, KEY_P, KEY_PUP, KEY_R, R_MINERAL, R_WATER, R_WHEAT, R_WOOD
 from constants.og import DOMINANT_RESOURCES, OG_ACTIVE_ID, OG_COLLATERAL, OG_DOMINANT_RESOURCES, OG_FORCE, OG_INSURANCE, OG_MISC, OG_NAME, OG_NO, OG_RMULTIPLIER, OG_USED_POWERUPS, START_C
+from constants.powerups import P_NAME
 from constants.storage import FOLDER_DATA
 from constants.templates import GET_B_TEMPLATE, GET_P_TEMPLATE, GET_R_TEMPLATE
 from objects.Building import Building
@@ -81,7 +82,7 @@ class OG():
         if not houses:
             if villages:
                 return villages[0]
-            
+
             return None
 
         return houses[0]
@@ -109,7 +110,8 @@ class OG():
             OG_NO: str(self.just_say_no_count),
             OG_COLLATERAL: [b.to_obj() for b in self.collateral_buildings],
             OG_USED_POWERUPS: str(self.used_powerups),
-            OG_MISC: str(self.misc_points)
+            OG_MISC: str(self.misc_points),
+            KEY_R: self.items[KEY_R]
         }
 
     def from_obj(self, obj):
@@ -124,29 +126,34 @@ class OG():
             b_obj) for b_obj in obj[OG_COLLATERAL]]
         self.used_powerups = literal_eval(obj[OG_USED_POWERUPS])
         self.misc_points = literal_eval(obj[OG_MISC])
+        self.items = {}
+        self.items[KEY_R] = obj[KEY_R]
+        return self
 
     def load_from_json(self):
         if os.path.exists(self.filename):
             f = open(self.filename, 'r')
             res = json.load(f)
             f.close()
-            res[KEY_B] = {k: [Building().from_obj(b) for b in v]
-                          for k, v in res[KEY_B].items()}
-            res[KEY_PUP] = [Powerup(p['pName']).from_obj(p['pName'])
-                            for p in res[KEY_PUP]]
-            self.items = res
+            og = self.from_obj(res)
+            og.items[KEY_B] = {k: [Building().from_obj(b) for b in v]
+                               for k, v in res[KEY_B].items()}
+            og.items[KEY_PUP] = [Powerup(p[P_NAME]).from_obj(p[P_NAME])
+                                 for p in res[KEY_PUP]]
+            self = og
             return
 
         self.reset_items()
 
     def save_to_json(self):
         obj = self.items.copy()
-        obj[KEY_B] = {k: [b.to_obj() for b in v]
-                      for k, v in obj[KEY_B].items()}
-        obj[KEY_PUP] = [p.to_obj() for p in obj[KEY_PUP]]
+        savefile = self.to_obj()
+        savefile[KEY_B] = {k: [b.to_obj() for b in v]
+                           for k, v in obj[KEY_B].items()}
+        savefile[KEY_PUP] = [p.to_obj() for p in obj[KEY_PUP]]
 
         with open(self.filename, 'w') as f:
-            json.dump(obj, f)
+            json.dump(savefile, f)
 
     def get_other_r_keys(self):
         return [x for x in [R_WHEAT, R_MINERAL, R_WATER, R_WOOD] if x != self.dominant_r]
