@@ -87,7 +87,7 @@ async def add_building(update, context):
     b = Building()
     choices = None
 
-    async def on_resp_building_loc(og, type, set, loc):
+    async def on_resp_building_loc(og, type, loc):
         if og.buy_building(b, use_resources=False):
             c = choices[int(loc) - 1]
             existing_b = g_env.MAP.get_building(c)
@@ -116,7 +116,7 @@ async def add_building(update, context):
             g_env.MAP.unlock(id)
         else:
             await BOT_MAP(id, choices)
-            await BOT_COMM(id, COMM_CIN, f"Where do you want to build a {type}?", options=list(range(1, len(choices) + 1)), on_response=lambda loc: on_resp_building_loc(type, set, loc))
+            await BOT_COMM(id, COMM_CIN, f"Where do you want to build a {type}?", options=list(range(1, len(choices) + 1)), on_response=lambda loc: on_resp_building_loc(og, type, loc))
 
     async def on_resp_og(og_name):
         await BOT_COMM(id, COMM_CIN, "Please enter building type.", options=B_LIST, on_response=lambda btype: on_resp_building_type(g_env.OGS[og_name], btype))
