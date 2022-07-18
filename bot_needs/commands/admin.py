@@ -121,7 +121,7 @@ async def add_building(update, context):
     async def on_resp_og(og_name):
         await BOT_COMM(id, COMM_CIN, "Please enter building type.", options=B_LIST, on_response=lambda btype: on_resp_building_type(g_env.OGS[og_name], btype))
         
-    g_env.MAP.map_lock(id)
+    g_env.MAP.lock(id)
     await BOT_COMM(id, COMM_CIN, 'Please choose an OG to add a building to.', options=OGS_LIST, on_response=on_resp_og)
 
 async def move_collateral_buildings(update, context):
