@@ -4,7 +4,7 @@ from constants.names import KEY_PUP_QUANTITY
 from constants.powerups import PUP_INFO
 import globals.env as g_env
 from objects.Powerup import Powerup
-from scheduling.tasks import PUP_FILENAME
+from constants.storage import PUP_FILENAME
 
 def get_random_pup():
     pup_keys = list(g_env.PUP_TRACKER.keys())

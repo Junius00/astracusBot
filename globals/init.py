@@ -7,7 +7,7 @@ from objects.Map import Map
 from constants.powerups import PUP_INFO
 
 from scheduling import schedule_dt, schedule_dt_async
-from scheduling.tasks import clear_pending_actions, make_backup, revert_flags_lost, switch_fools_luck
+from scheduling.tasks import add_command_desc, clear_pending_actions, make_backup, revert_flags_lost, switch_fools_luck
 
 from powerups.allocation import load_pups
 
@@ -20,6 +20,9 @@ def schedule_tasks():
 
     # switch Fool's Luck to Day 3 action
     schedule_dt_async(DAY3_START, switch_fools_luck)
+
+    # add new commands on Day 3
+    schedule_dt_async(DAY3_START, add_command_desc)
 
     # clear all pending actions
     clear_pending_actions()

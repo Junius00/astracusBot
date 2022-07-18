@@ -1,5 +1,5 @@
 import asyncio
-from telegram import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram import BotCommandScopeChat, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from async_functions.running import synchronous_run
 
 from bot_needs.comm import get_chat_id
@@ -74,6 +74,11 @@ class BotState():
 
     def add_admin_id(self, id):
         self.admin_ids.append(id)
+
+    async def update_admin_command_desc(self, commands):
+        for id in self.admin_ids:
+            scope = BotCommandScopeChat(id)
+            await self.app.bot.set_my_commands(commands, scope=scope)
 
     async def start_game(self):
         if not self.game_is_running:

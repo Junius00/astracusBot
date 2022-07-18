@@ -2,6 +2,8 @@ import json
 import math
 import os
 from ast import literal_eval
+
+from telegram import BotCommandScopeChat
 from bot_needs.comm import BOT_COMM
 from constants.bot.common import COMM_COUT
 from constants.names import B_HOUSE, B_ROAD, B_VILLAGE, KEY_B, KEY_P, KEY_PUP, KEY_R, R_MINERAL, R_WATER, R_WHEAT, R_WOOD
@@ -63,6 +65,13 @@ class OG():
             await BOT_COMM(self.active_id, COMM_COUT, 'You have been deregistered. Please check within your OG to see who took control, or use /start to take control back.')
 
         self.active_id = new_id
+
+    async def update_command_desc(self, commands):
+        if not self.active_id:
+            return
+        
+        scope = BotCommandScopeChat(self.active_id)
+        await g_bot.STATE.app.bot.set_my_commands(commands, scope=scope)
 
     def reset_items(self):
         self.items = {

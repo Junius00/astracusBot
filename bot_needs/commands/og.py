@@ -141,8 +141,10 @@ async def buy_powerup_card(update, context):
 
                 def on_completion():
                     og.used_powerups += 1
+                
                 await pup.activate(og, on_completion)
 
+            await BOT_COMM(chat_id, COMM_COUT, f'You can use the /usepowerup command now to use your newly obtained {pup.name}.')
             return
 
         await BOT_COMM(chat_id, COMM_COUT, 'Purchase has failed. Please try again later.')
@@ -278,16 +280,20 @@ async def place_collateral_buildings(update, context):
 
 BOTCOMMANDS_OG = [
     BotCommand(
-        'overview', 'Get an overview of your current OG\'s resources and points.'),
+        'overview', 'See your OG\'s resources and points.'),
     BotCommand('buybuilding', 'Buy a building and place it on the map.'),
     BotCommand('buypowerupcard', 'Buy a powerup card.'),
     BotCommand('viewpowerupcards', 'View all unused powerup cards.'),
     BotCommand('usepowerupcard', 'Use an unused powerup card.'),
-    BotCommand('viewcollateralbuildings',
-               'View all unplaced collateral buildings.'),
-    BotCommand('placecollateralbuildings',
-               'Put down buildings won as collateral from games (if possible).')
 ]
+
+BOTCOMMANDS_OG_DAY3 = [
+    BotCommand('viewcollateralbuildings',
+               'View all unplaced buildings won.'),
+    BotCommand('placecollateralbuildings',
+               'Put down buildings won (if possible).')
+]
+
 COMMAND_HANDLERS_OG = {
     'overview': overview,
     'buybuilding': buy_building,

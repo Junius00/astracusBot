@@ -1,20 +1,23 @@
 from telegram import BotCommand, BotCommandScopeChat
 from bot_needs.comm import BOT_COMM, BOT_MAP, get_chat_id
-from bot_needs.commands.admin import BOTCOMMANDS_ADMIN
+from bot_needs.commands.admin import BOTCOMMANDS_ADMIN, BOTCOMMANDS_ADMIN_DAY3
 from bot_needs.commands.alerts import alerted_map_lock
-from bot_needs.commands.og import BOTCOMMANDS_OG
+from bot_needs.commands.og import BOTCOMMANDS_OG, BOTCOMMANDS_OG_DAY3
 from bot_needs.user import get_identity, get_user
+from calculation.days import get_day
 from constants.bot.common import COMM_COUT
 from constants.bot.users import ROLE_ADMIN
 import globals.bot as g_bot
 import globals.env as g_env
-
 
 async def start_handler(update, context):
     chat_id = get_chat_id(update)
     role = get_identity(get_user(update))
 
     add_bot_commands = BOTCOMMANDS_ADMIN if role == ROLE_ADMIN else BOTCOMMANDS_OG
+    if get_day() == 3:
+        add_bot_commands += BOTCOMMANDS_ADMIN_DAY3 if role == ROLE_ADMIN else BOTCOMMANDS_OG_DAY3
+        
     scope = BotCommandScopeChat(chat_id)
 
     if role != ROLE_ADMIN:
@@ -58,9 +61,9 @@ async def cancel_handler(update, context):
 
 BOTCOMMANDS_COMMON = [
     BotCommand(
-        'start', 'Take control of your OG / Sign in as an admin, depending on who you are.'),
-    BotCommand('cancel', 'Cancel pending bot commands.'),
-    BotCommand('viewmap', 'View the current map.')
+        'start', 'Sign in.'),
+    BotCommand('cancel', 'Cancel current bot command.'),
+    BotCommand('viewmap', 'View current map.')
 ]
 
 COMMAND_HANDLERS_COMMON = {
