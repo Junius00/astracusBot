@@ -48,4 +48,5 @@ async def BOT_COMM(chat_id, dir, msg, is_end_of_sequence=True, options=None, on_
         if is_end_of_sequence:
             g_bot.STATE.mark_free(chat_id)
             g_bot.STATE.clear_pending(chat_id)
+            g_bot.STATE.remove_on_cancel(chat_id)
             g_bot.STATE.do_next_action(chat_id)

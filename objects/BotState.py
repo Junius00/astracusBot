@@ -125,6 +125,10 @@ class BotState():
     def add_on_cancel(self, chat_id, on_cancel):
         self.on_cancels[chat_id] = on_cancel
     
+    def remove_on_cancel(self, chat_id):
+        if chat_id in self.on_cancels:
+            del self.on_cancels[chat_id]
+    
     async def call_on_cancel(self, chat_id):
         if chat_id in self.on_cancels:
             await self.on_cancels[chat_id]()
