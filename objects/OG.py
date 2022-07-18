@@ -180,15 +180,16 @@ class OG():
     def get_resource_count(self, r_key):
         return self.get_resources()[r_key]
 
-    def add_resource(self, r_key, amount):
+    def add_resource(self, r_key, amount, apply_multipliers=True):
         new_amount = amount
 
-        if self.r_multiplier != 1:
-            new_amount = math.ceil(amount * self.r_multiplier)
-            self.r_multiplier = 1
+        if apply_multipliers:
+            if self.r_multiplier != 1:
+                new_amount = math.ceil(amount * self.r_multiplier)
+                self.r_multiplier = 1
 
-        if self.flags_lost > 0 and not self.has_insurance:
-            new_amount = math.ceil(new_amount * (1 - 0.1 * self.flags_lost))
+            if self.flags_lost > 0 and not self.has_insurance:
+                new_amount = math.ceil(new_amount * (1 - 0.1 * self.flags_lost))
 
         self.items[KEY_R][r_key] += new_amount
 

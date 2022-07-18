@@ -16,7 +16,7 @@ from random import randint
 from telegram import BotCommand
 from bot_needs.comm import BOT_COMM, BOT_MAP, get_chat_id
 from bot_needs.commands.alerts import alerted_map_lock
-from constants.bot.common import COMM_CIN, COMM_COUT
+from constants.bot.common import COMM_CIN, COMM_COUT, RESP_NO, RESP_YES
 from constants.names import B_HOUSE, B_LIST, B_ROAD, B_VILLAGE, OGS_LIST, PUP_FOOLS_LUCK, R_LIST
 import globals.env as g_env
 from objects.Building import Building
@@ -25,34 +25,39 @@ from objects.Building import Building
 async def add_resource(update, context):
     id = get_chat_id(update)
 
-    async def on_resp_number(name, r, count):
+    async def on_resp_number(name, apply, r, count):
         try:
             count = int(count)
             assert count > 0
         except:
-            await BOT_COMM(id, COMM_CIN, 'An invalid amount was entered. Please enter an integer amount (greater than 0) to add.', on_response=lambda count: on_resp_number(name, r, count))
+            await BOT_COMM(id, COMM_CIN, 'An invalid amount was entered. Please enter an integer amount (greater than 0) to add.', on_response=lambda count: on_resp_number(name, apply, r, count))
             return
 
         og = g_env.OGS[name]
-        added, multi = og.add_resource(r, count)
+        added, multi = og.add_resource(r, count, apply_multipliers=apply)
+        multi_str = f' ({multi:.2f}x multiplier applied)' if apply else ''
+        await BOT_COMM(id, COMM_COUT, f'{added} {r} has been added to {name}{multi_str}. [New total: {og.get_resource_count(r)} {r}]')
+        await BOT_COMM(og.active_id, COMM_COUT, f'You have earned {added} {r}!{multi_str} [New total: {og.get_resource_count(r)} {r}]', is_end_of_sequence=False)
 
-        await BOT_COMM(id, COMM_COUT, f'{added} {r} has been added to {name} ({multi:.2f}x multiplier applied). [New total: {og.get_resource_count(r)} {r}]')
-        await BOT_COMM(og.active_id, COMM_COUT, f'You have earned {added} {r}! ({multi:.2f}x multiplier applied) [New total: {og.get_resource_count(r)} {r}]', is_end_of_sequence=False)
+    async def on_resp_resource(name, apply, r):
+        await BOT_COMM(id, COMM_CIN, 'Please enter an integer amount (greater than 0) to add.', on_response=lambda count: on_resp_number(name, apply, r, count))
 
-    async def on_resp_resource(name, r):
-        await BOT_COMM(id, COMM_CIN, 'Please enter an integer amount (greater than 0) to add.', on_response=lambda count: on_resp_number(name, r, count))
-
-    async def on_resp_og(name):
-        if g_env.OGS[name].force_resource:
+    async def on_resp_apply_effects(name, apply):
+        apply = apply == RESP_YES
+        if apply and g_env.OGS[name].force_resource:
             r = g_env.OGS[name].force_resource
             await BOT_COMM(id, COMM_COUT, f'{r} has been set as the resource to gain, from previous actions.')
             await on_resp_resource(name, r)
             return
 
-        await BOT_COMM(id, COMM_CIN, 'Please choose a resource to add.', options=R_LIST, on_response=lambda r: on_resp_resource(name, r))
+        await BOT_COMM(id, COMM_CIN, 'Please choose a resource to add.', options=R_LIST, on_response=lambda r: on_resp_resource(name, apply, r))
+
+    async def on_resp_og(name):
+        await BOT_COMM(id, COMM_CIN, 'Should we apply effects to the number of resources added? (e.g., force resource type, use multipliers from powerup cards)', 
+        options=[RESP_YES, RESP_NO], on_response=lambda apply: on_resp_apply_effects(name, apply))
+        
 
     await BOT_COMM(id, COMM_CIN, 'Please choose an OG to add resources for.', options=OGS_LIST, on_response=on_resp_og)
-
 
 async def delete_resource(update, context):
     id = get_chat_id(update)
@@ -199,22 +204,24 @@ async def move_collateral_buildings(update, context):
     await BOT_COMM(id, COMM_CIN, 'Please choose a buliding type to move.', options=[btype for btype in B_LIST if btype != B_ROAD], on_response=on_resp_btype)
 
 
-async def mark_flags_stolen(update, context):
+async def mark_flag_stolen(update, context):
     id = get_chat_id(update)
 
     async def on_resp_og_culprit(og_victim, og_culprit):
         og_v = g_env.OGS[og_victim]
         og_c = g_env.OGS[og_culprit]
         og_v.add_flag_lost()
-        og_c.add_resource(R_LIST[randint(0, 3)], 30)
-        await BOT_COMM(id, COMM_COUT, f'Flag has been stolen from {og_victim} by {og_culprit}. {og_victim} has lost {og_v.flags_lost} flag(s) today.')
+
+        r = R_LIST[randint(0, 3)]
+        og_c.add_resource(r, 30, apply_multipliers=False)
+        await BOT_COMM(id, COMM_COUT, f'Flag has been stolen from {og_victim} by {og_culprit}.\n{og_victim} has lost {og_v.flags_lost} flag(s) today.\n{og_culprit} received 30 {r} as a reward.')
         await BOT_COMM(og_v.active_id, COMM_COUT, f'One of your flags has been stolen. You have lost {og_v.flags_lost} flag(s) today.', is_end_of_sequence=False)
-        await BOT_COMM(og_c.active_id, COMM_COUT, f'You have stolen a flag from {og_victim}! You have received 30 random resources.', is_end_of_sequence=False)
+        await BOT_COMM(og_c.active_id, COMM_COUT, f'You have stolen a flag from {og_victim}! You have received 30 {r} as a reward.', is_end_of_sequence=False)
 
     async def on_resp_og_victim(og_victim):
         await BOT_COMM(id, COMM_CIN, 'Which OG was the culprit?', options=OGS_LIST, on_response=lambda og_culprit: on_resp_og_culprit(og_victim, og_culprit))
 
-    await BOT_COMM(id, COMM_CIN, 'Please choose the OG who got their flag stolen', options=OGS_LIST, on_response=on_resp_og_victim)
+    await BOT_COMM(id, COMM_CIN, 'Please choose the OG who got their flag stolen.', options=OGS_LIST, on_response=on_resp_og_victim)
 
 
 async def get_scores(update, context):
@@ -291,6 +298,7 @@ async def remove_misc_points(update, context):
 BOTCOMMANDS_ADMIN = [
     BotCommand('addresource', 'Add resources to an OG.'),
     BotCommand('deleteresource', 'Delete resources from an OG.'),
+    BotCommand('markflagstolen', 'Mark a flag as stolen.'),
     BotCommand('getscores', 'Get scores of all OGs.'),
     BotCommand('viewresources', 'View resources of all OGs.'),
     BotCommand('addmiscpoints', 'Add misc. points to an OG.'),
@@ -306,6 +314,7 @@ BOTCOMMANDS_ADMIN_DAY3 = [
 COMMAND_HANDLERS_ADMIN = {
     'addresource': add_resource,
     'deleteresource': delete_resource,
+    'markflagstolen': mark_flag_stolen,
     'movecollateralbuildings': move_collateral_buildings,
     'getscores': get_scores,
     'viewresources': view_resources,
