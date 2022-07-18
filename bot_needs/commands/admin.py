@@ -290,13 +290,14 @@ async def remove_misc_points(update, context):
 
 BOTCOMMANDS_ADMIN = [
     BotCommand('addresource', 'Add a number of resources to an OG.'),
-    BotCommand('deleteresource', 'Delete a number of resources to an OG.'),
+    BotCommand('deleteresource', 'Delete a number of resources to an OG.'), 
     BotCommand('movecollateralbuildings',
                'Move collateral buildings from one OG to another.'),
     BotCommand('getscores', 'Get scores of all OGs.'),
     BotCommand('viewresources', 'View resources of all OGs.'),
     BotCommand('addmiscpoints', 'Add miscellaneous points to an OG.'),
     BotCommand('removemiscpoints', 'Remove miscellaneous points to an OG.'),
+    BotCommand('addbuilding', 'Add buildings to an OG'),
 ]
 
 COMMAND_HANDLERS_ADMIN = {
@@ -307,4 +308,5 @@ COMMAND_HANDLERS_ADMIN = {
     'viewresources': view_resources,
     'addmiscpoints': add_misc_points,
     'removemiscpoints': remove_misc_points,
+    'addbuilding': add_building,
 }

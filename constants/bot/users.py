@@ -6,6 +6,7 @@ ROLE_ADMIN = 'Admin'
 
 WHITELIST = {
     'chknuggets': OG_AVARI,
+    'Yeast99': OG_AVARI,
     'Soyabeaniess': OG_KELGRAS,
     'meggolim': OG_LEVIATHAN,
     'felicialeeee': ROLE_ADMIN,
