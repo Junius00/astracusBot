@@ -201,12 +201,12 @@ async def view_resources(update, context):
 async def add_misc_points(update, context):
     id = get_chat_id(update)
 
-    async def on_resp_number(og_name, r, count):
+    async def on_resp_number(og_name, count):
         try:
             count = int(count)
             assert count > 0
         except:
-            await BOT_COMM(id, COMM_CIN, 'An invalid amount was entered. Please enter an integer amount (greater than 0) to remove.', on_response=lambda count: on_resp_number(og_name, r, count))
+            await BOT_COMM(id, COMM_CIN, 'An invalid amount was entered. Please enter an integer amount (greater than 0) to remove.', on_response=lambda count: on_resp_number(og_name, count))
             return
 
         og = g_env.OGS[og_name]
@@ -223,12 +223,12 @@ async def add_misc_points(update, context):
 async def remove_misc_points(update, context):
     id = get_chat_id(update)
 
-    async def on_resp_number(og_name, r, count):
+    async def on_resp_number(og_name, count):
         try:
             count = int(count)
             assert count > 0
         except:
-            await BOT_COMM(id, COMM_CIN, 'An invalid amount was entered. Please enter an integer amount (greater than 0) to remove.', on_response=lambda count: on_resp_number(og_name, r, count))
+            await BOT_COMM(id, COMM_CIN, 'An invalid amount was entered. Please enter an integer amount (greater than 0) to remove.', on_response=lambda count: on_resp_number(og_name, count))
             return
 
         og = g_env.OGS[og_name]
