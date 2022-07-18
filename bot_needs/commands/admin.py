@@ -15,6 +15,7 @@ admin functions:
 from random import randint
 from telegram import BotCommand
 from bot_needs.comm import BOT_COMM, BOT_MAP, get_chat_id
+from bot_needs.commands.alerts import alerted_map_lock
 from constants.bot.common import COMM_CIN, COMM_COUT
 from constants.names import B_HOUSE, B_LIST, B_ROAD, B_VILLAGE, OGS_LIST, PUP_FOOLS_LUCK, R_LIST
 import globals.env as g_env
@@ -77,6 +78,51 @@ async def delete_resource(update, context):
 
     await BOT_COMM(id, COMM_CIN, 'Please choose an OG to remove resources from.', options=OGS_LIST, on_response=on_resp_og)
 
+async def add_building(update, context):
+    id = get_chat_id(update)
+    
+    if await alerted_map_lock(id):
+        return
+
+    b = Building()
+    choices = None
+
+    async def on_resp_building_loc(og, type, set, loc):
+        if og.buy_building(b, use_resources=False):
+            c = choices[int(loc) - 1]
+            existing_b = g_env.MAP.get_building(c)
+            if existing_b:
+                og.delete_building(existing_b)
+                g_env.MAP.remove_building(existing_b)
+            
+            g_env.MAP.place_building(c, b)
+
+            await BOT_MAP(id)
+            await BOT_COMM(id, COMM_COUT, f"Building of type {type} placed.")
+            
+        else:
+            await BOT_COMM(id, COMM_COUT, "Purchase failed. Please try again later.")
+
+        g_env.MAP.unlock(id)
+
+    async def on_resp_building_type(og, type):
+        b.set_name(type)
+
+        nonlocal choices
+        choices = g_env.MAP.get_possible_choices(og, b)
+
+        if not choices:
+            await BOT_COMM(id, COMM_COUT, "No locations available.")
+            g_env.MAP.unlock(id)
+        else:
+            await BOT_MAP(id, choices)
+            await BOT_COMM(id, COMM_CIN, f"Where do you want to build a {type}?", options=list(range(1, len(choices) + 1)), on_response=lambda loc: on_resp_building_loc(type, set, loc))
+
+    async def on_resp_og(og_name):
+        await BOT_COMM(id, COMM_CIN, "Please enter building type.", options=B_LIST, on_response=lambda btype: on_resp_building_type(g_env.OGS[og_name], btype))
+        
+    g_env.MAP.map_lock(id)
+    await BOT_COMM(id, COMM_CIN, 'Please choose an OG to add a building to.', options=OGS_LIST, on_response=on_resp_og)
 
 async def move_collateral_buildings(update, context):
     id = get_chat_id(update)
