@@ -190,23 +190,23 @@ async def just_say_no(og_self, on_completion):
 
 
 async def fate_of_hell(og_self, on_completion):
-    async def on_resp_resource_choice(resource):
-        og_target = [og for og_name, og in g_env.OGS.items(
-        ) if og_name != og_self.name][randint(0, 2)]
+    async def on_resp_og_name(og_name):
+        og_target = g_env.OGS[og_name]
 
         async def finish_action():
+            resource = R_LIST[randint(0, 3)]
             amount = randint(1, 25)
             destroyed = min(og_target.get_resource_count(resource), amount)
             og_target.delete_resource(resource, destroyed)
 
-            await BOT_COMM(og_self.active_id, COMM_COUT, f"Fate of Hell is activated. You have successfully destroyed {destroyed} {resource} from {og_target.name}")
-            await BOT_COMM(og_target.active_id, COMM_COUT, f"Oh no! Another tribe has activated the Fate of Hell. {destroyed} {resource} that you own has been destroyed.", is_end_of_sequence=False)
+            await BOT_COMM(og_self.active_id, COMM_COUT, f"{PUP_FATE_OF_HELL} is activated. You have successfully destroyed {destroyed} {resource} from {og_target.name}")
+            await BOT_COMM(og_target.active_id, COMM_COUT, f"Oh no! Another tribe has activated {PUP_FATE_OF_HELL}. {destroyed} {resource} that you own has been destroyed.", is_end_of_sequence=False)
 
             on_completion()
 
         await check_for_just_say_no(og_self, og_target, PUP_FATE_OF_HELL, finish_action)
 
-    await BOT_COMM(og_self.active_id, COMM_CIN, f'You can choose a resource to destroy from a random tribe. The number will be randomised as well.', options=R_LIST, on_response=on_resp_resource_choice)
+    await BOT_COMM(og_self.active_id, COMM_CIN, f'You can choose a tribe to destroy their resources. The number and resource type will both be randomised.', options=OGS_LIST, on_response=on_resp_og_name)
 
 
 async def telescope(og_self, on_completion):
