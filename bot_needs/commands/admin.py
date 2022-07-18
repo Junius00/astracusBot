@@ -75,7 +75,7 @@ async def delete_resource(update, context):
     async def on_resp_og(name):
         await BOT_COMM(id, COMM_CIN, 'Please choose a resource to remove.', options=R_LIST, on_response=lambda r: on_resp_resource(name, r))
 
-    await BOT_COMM(id, COMM_CIN, 'Please choose an OG to add resources for.', options=OGS_LIST, on_response=on_resp_og)
+    await BOT_COMM(id, COMM_CIN, 'Please choose an OG to remove resources from.', options=OGS_LIST, on_response=on_resp_og)
 
 
 async def move_collateral_buildings(update, context):
