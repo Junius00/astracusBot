@@ -290,12 +290,16 @@ class OG():
     def get_powerups(self):
         return self.items[KEY_PUP]
 
-    def has_powerup(self, pup_name):
+    def modify_powerup(self, pup_name, desc, action):
+        modified = False
+
         for pup in self.get_powerups():
             if pup.name == pup_name:
-                return True
+                pup.desc = desc
+                pup.action = action
+                modified = True
 
-        return False
+        return modified
 
     async def use_powerup(self, index):
         def on_completion():

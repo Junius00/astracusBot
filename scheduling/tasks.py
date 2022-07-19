@@ -22,8 +22,11 @@ def revert_flags_lost():
 # change Fool's Luck action and notify all
 async def switch_fools_luck():
     print(f'Running scheduled Fool\'s Luck switching at {dt.now()}')
-    g_env.PUP_TRACKER[PUP_FOOLS_LUCK][KEY_PUP_ACTION] = fools_luck_day3
-    g_env.PUP_TRACKER[PUP_FOOLS_LUCK][KEY_PUP_DESC] = 'Activate this card before the next mass game. If your tribe wins the next mass game, you will gain 50% more structures from the amount of collateral the losing tribe has put down.'
+    new_desc = 'Activate this card before the next mass game. If your tribe wins the next mass game, you will gain 50% more structures from the amount of collateral the losing tribe has put down.'
+    new_action = fools_luck_day3
+
+    g_env.PUP_TRACKER[PUP_FOOLS_LUCK][KEY_PUP_ACTION] = new_action
+    g_env.PUP_TRACKER[PUP_FOOLS_LUCK][KEY_PUP_DESC] = new_desc
 
     alert_msg = """A twist to Fool's Luck! Instead of receiving extra resources, your total earnings will be determined by the amount of collateral you put down for each game. If your tribe wins the mass game you have selected to use this card on, you will gain 50% more structures from the amount of collateral the losing tribe has put down. For example:
 
@@ -34,7 +37,7 @@ For odd number of collateral put down, the following allocation system will be f
     - If losing tribe puts down 1 village as collateral, your tribe will gain 1 extra house
 """
     for og in g_env.OGS.values():
-        if og.has_powerup(PUP_FOOLS_LUCK):
+        if og.modify_powerup(PUP_FOOLS_LUCK, new_desc, new_action):
             await BOT_COMM(og.active_id, COMM_COUT, alert_msg, is_end_of_sequence=False)
 
 # clear all actions if OG is free
