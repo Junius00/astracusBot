@@ -230,7 +230,8 @@ async def get_scores(update, context):
     all_scores = ''
 
     for og_name in OGS_LIST:
-        all_scores += f'{og_name} has {g_env.OGS[og_name].calculate_points()} point(s).\n'
+        og = g_env.OGS[og_name]
+        all_scores += f'{og_name} has {og.calculate_points()} point(s) and has used {og.used_powerups} powerup card(s).\n'
 
     await BOT_COMM(id, COMM_COUT, all_scores)
 
