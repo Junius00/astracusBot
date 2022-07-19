@@ -15,37 +15,40 @@ WHITELIST = {
     'Clajoannalim': ROLE_ADMIN, #Chief Pubs
     'leahkxr': ROLE_ADMIN, #Chief Logs
 
-    #Proggies
-    'chknuggets': ROLE_ADMIN, #Ho Chi
-
     #OG1 AVARI
     'Yeast99': OG_AVARI, #Mai
-    'danishuzair': OG_AVARI, #Danish
     'Tankyyyy': OG_AVARI, #Leng Ze
-    'leejiaqi': OG_AVARI, #Jia Qi
-    'onghaixiang': OG_AVARI, #Hai Xiang
+    'wajeeheehee': OG_AVARI,
+    'magnuslim': OG_AVARI,
+    'hermionewong': OG_AVARI,
+    'StretchBeforeLifting': OG_AVARI,
+    'iwannaslp': OG_AVARI,
 
     #OG2 KELGRAS
     'leongziwei': OG_KELGRAS, #Zi Wei
-    'nyanmao2': OG_KELGRAS, #Maw Htun
-    'GravityGhost': OG_KELGRAS, #Siyuan
-    'oyosuanchance': OG_KELGRAS, #Ian Lim
-    'joslyn_cwj': OG_KELGRAS, #Joslyn
     'cherylcczq': OG_KELGRAS, #Cheryl Chua
+    'bohzy': OG_KELGRAS,
+    'i_siao': OG_KELGRAS,
+    'doonisaur': OG_KELGRAS,
+    'Denryuu': OG_KELGRAS,
+    'yongeen': OG_KELGRAS,
+    'OngKh': OG_KELGRAS,
 
     #OG3 LEVIATHAN
     'avelynnang': OG_LEVIATHAN, #Avelynn
-    'fdddd75': OG_LEVIATHAN, #Evan
-    'ntzeho': OG_LEVIATHAN, #Tze Ho
     'Nathan_Teo': OG_LEVIATHAN, #Nathan
-    'augustinothia': OG_LEVIATHAN, #Albert
-    'Tchcheryl': OG_LEVIATHAN, #Cheryl Tan
+    'JF_Lim': OG_LEVIATHAN,
+    'simone_chen': OG_LEVIATHAN,
+    'gavin_chill': OG_LEVIATHAN,
+    'tiffliuy': OG_LEVIATHAN,
+    'der_ying': OG_LEVIATHAN,
 
     #OG4 THERON
     'j_ennnnnnnn': OG_THERON, #Jenn
-    'JinHong14': OG_THERON, #Jin Hong
     'emnenms': OG_THERON, #Emily Yip
-    'ruiqingg': OG_THERON, #Rui Qing
-    'jovinshi': OG_THERON, #Jovin
-    'Ryan_Poon': OG_THERON, #Ryan Poon
+    'joyceandlyn': OG_THERON,
+    'jxynaa': OG_THERON,
+    'KASHING99': OG_THERON,
+    'yesiremembered': OG_THERON,
+    'phoques': OG_THERON,
 }
