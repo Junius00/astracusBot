@@ -46,7 +46,7 @@ async def add_resource(update, context):
         apply = apply == RESP_YES
         if apply and g_env.OGS[name].force_resource:
             r = g_env.OGS[name].force_resource
-            await BOT_COMM(id, COMM_COUT, f'{r} has been set as the resource to gain, from previous actions.')
+            await BOT_COMM(id, COMM_COUT, f'{r} has been set as the resource to gain, from previous actions.', is_end_of_sequence=False)
             await on_resp_resource(name, r)
             return
 
