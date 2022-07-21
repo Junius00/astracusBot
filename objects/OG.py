@@ -191,6 +191,8 @@ class OG():
             if self.flags_lost > 0 and not self.has_insurance:
                 new_amount = math.ceil(new_amount * (1 - 0.1 * self.flags_lost))
 
+            self.force_resource = None
+        
         self.items[KEY_R][r_key] += new_amount
 
         return new_amount, new_amount / amount
