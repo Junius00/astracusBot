@@ -79,8 +79,8 @@ async def barter_trade(og_self, on_completion):
 
 
 async def insurance(og_self, on_completion):
-    og_self.has_insurance = True
-    await BOT_COMM(og_self.active_id, COMM_COUT, 'Insurance has been activated! You will no longer lose points from having your flag stolen.')
+    og_self.misc_points += 1
+    await BOT_COMM(og_self.active_id, COMM_COUT, 'Insurance has been activated! You have gained an extra point.')
     on_completion()
 
 
@@ -145,7 +145,7 @@ async def check_for_just_say_no(og_self, og_target, pup_name, finish_action):
 
 async def road_block(og_self, on_completion):
     og_target = sorted([og for og_name, og in g_env.OGS.items(
-    ) if og_name != og_self.name], key=lambda og: og.calculate_points())[0]
+    ) if og_name != og_self.name], key=lambda og: og.calculate_points())[-1]
 
     async def finish_action():
         og_target.r_multiplier = 0.5
@@ -211,7 +211,7 @@ async def fate_of_hell(og_self, on_completion):
 
 async def telescope(og_self, on_completion):
     og_target = sorted([og for og_name, og in g_env.OGS.items(
-    ) if og_name != og_self.name], key=lambda og: og.calculate_points())[0]
+    ) if og_name != og_self.name], key=lambda og: og.calculate_points())[-1]
     resources = og_target.get_resources()
     scores = og_target.calculate_points()
     text = f"Telescope is activated.\n\n{og_target.name} is leading with {scores} point(s).\nTheir current resources:\n"

@@ -33,7 +33,7 @@ def PUP_INFO():
         },
         PUP_INSURANCE: {
             KEY_PUP_QUANTITY: 2,
-            KEY_PUP_DESC: 'You will be immune to the penalties imposed when other tribes steal your flag.',
+            KEY_PUP_DESC: 'You will get a free point.',
             KEY_PUP_ACTION: insurance,
             KEY_PUP_IS_INSTANT: True
         },
