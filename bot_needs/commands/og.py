@@ -143,8 +143,8 @@ async def buy_powerup_card(update, context):
                     og.used_powerups += 1
                 
                 await pup.activate(og, on_completion)
-
-            await BOT_COMM(chat_id, COMM_COUT, f'You can use the /usepowerup command now to use your newly obtained {pup.name}.')
+            else:
+                await BOT_COMM(chat_id, COMM_COUT, f'You can use the /usepowerup command now to use your newly obtained {pup.name}.')
             return
 
         await BOT_COMM(chat_id, COMM_COUT, 'Purchase has failed. Please try again later.')

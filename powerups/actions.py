@@ -180,7 +180,7 @@ async def sneaky_thief(og_self, on_completion):
 
         await check_for_just_say_no(og_self, og_target, PUP_SNEAKY_THIEF, finish_action)
 
-    await BOT_COMM(og_self.active_id, COMM_CIN, f'You can steal 25 random resources from another tribe of choice.', options=[OG for OG in OGS_LIST if OG != og_self.name], on_response=on_resp_og_choice)
+    await BOT_COMM(og_self.active_id, COMM_CIN, f'Please choose a tribe to steal 25 resources of a random type from:', options=[OG for OG in OGS_LIST if OG != og_self.name], on_response=on_resp_og_choice)
 
 
 async def just_say_no(og_self, on_completion):
@@ -206,7 +206,7 @@ async def fate_of_hell(og_self, on_completion):
 
         await check_for_just_say_no(og_self, og_target, PUP_FATE_OF_HELL, finish_action)
 
-    await BOT_COMM(og_self.active_id, COMM_CIN, f'You can choose a tribe to destroy their resources. The number and resource type will both be randomised.', options=OGS_LIST, on_response=on_resp_og_name)
+    await BOT_COMM(og_self.active_id, COMM_CIN, f'Please choose a tribe to destroy their resources. The number and resource type will both be randomised.', options=OGS_LIST, on_response=on_resp_og_name)
 
 
 async def telescope(og_self, on_completion):
